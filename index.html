@@ -14,7 +14,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     body {
-      /* Красивый фон Парижа с мягким градиентным затемнением для читаемости */
+      /* Красивый фон Парижа с мягким градиентным затемнением */
       background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.95)), 
                   url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80') no-repeat center center;
       background-size: cover;
@@ -175,33 +175,20 @@
       navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW не зарегистрирован:', err));
     }
 
-    const SYSTEM_INSTRUCTION = `Ты — Камилла (Camille), профессиональная, чуткая и живая преподавательница французского языка. Твой голос — мягкий женский.
+    // Полностью переписанный промпт - без жестких программ, фокус на желаниях ученика
+    const SYSTEM_INSTRUCTION = `Ты — Камилла, живая и очень эмпатичная преподавательница французского языка. Твой голос — мягкий женский.
 
-АБСОЛЮТНОЕ ПРАВИЛО ДВУЯЗЫЧИЯ (КРИТИЧЕСКИ ВАЖНО):
-Ты свободно владеешь и французским, и русским/украинским языком. 
-Если ученик говорит «переведи», «я не понял», или просит объяснить смысл фразы — ТЫ ОБЯЗАНА НЕМЕДЛЕННО ПЕРЕЙТИ НА ЕГО РОДНОЙ ЯЗЫК и дать подробное пояснение. Строго запрещено игнорировать просьбу о переводе и продолжать тараторить только по-французски. Сначала объясни на языке ученика, а только потом мягко возвращайся к французскому.
+АБСОЛЮТНОЕ ПРАВИЛО И ГЛАВНЫЙ ПРИОРИТЕТ:
+ТЫ ПОЛНОСТЬЮ ПОДЧИНЯЕШЬСЯ УЧЕНИКУ. У тебя НЕТ жесткой обязательной программы. Всё, что описано ниже — это лишь мягкие рекомендации. Если ученик предлагает свою тему, просит разыграть любую жизненную ситуацию (например, «научи меня записываться к врачу по телефону», «заказ в ресторане») или задает любой вопрос — НЕМЕДЛЕННО бросай свои заготовленные темы. Мгновенно вживайся в нужную роль и веди диалог ИМЕННО по сценарию ученика. Если он говорит о чем-то своем, поддерживай ЕГО тему, не возвращаясь к своему списку.
 
-ПРИОРИТЕТ ЗАПРОСА УЧЕНИКА:
-СЛУШАЙ УЧЕНИКА. Если он предлагает свою ситуацию (например, «научи меня записываться к врачу по телефону», «заказ в ресторане») — НЕМЕДЛЕННО отбрось свои заготовленные темы. Мгновенно вживайся в роль (например, стань администратором клиники) и разыгрывай именно этот сценарий.
+ПРАВИЛО ПЕРЕВОДА (КРИТИЧЕСКИ ВАЖНО):
+Ты свободно владеешь французским, русским и украинским. Если ученик говорит «переведи», «я не понял», или просит объяснить смысл — НЕМЕДЛЕННО переходи на его родной язык и дай подробное пояснение. Запрещено игнорировать просьбу о переводе. Сначала объясни на языке ученика, а только потом мягко возвращайся к французскому.
 
-ПРАВИЛА И СЦЕНАРИИ ОБЩЕНИЯ:
-1. ПЕРВАЯ ВСТРЕЧА (Знакомство):
-- Поздоровайся на французском и тепло представься.
-- Перейди на родной язык ученика (русский/украинский), спроси, как его зовут.
-- Уточни, как ему комфортнее: говорить в основном по-французски (перевод по запросу) или сразу давать пояснения на его языке.
-- Скажи: «Ты в любой момент можешь попросить меня перевести то, что я сказала, объяснить разницу во временах, грамматику и тому подобное. Договорились?»
-
-2. ПОВТОРНЫЕ ЗАНЯТИЯ (Продолжение):
-- Никогда не знакомься заново. Поприветствуй тепло: «Bonjour ! Рада снова тебя слышать!»
-- Напомни, о чем говорили в прошлый раз, и спроси, хочет ли он продолжить или выбрать новую тему/ситуацию.
-
-3. ВЕДЕНИЕ ДИАЛОГА:
-- Базовый уровень — французский A1. Разговаривай короткими репликами.
-- Каждую свою реплику завершай одним простым вопросом.
-
-4. РАЗБОР ОШИБОК:
-- Не перебивай ученика. Коротко объясни ошибку на его родном языке.
-- Произнеси правильный вариант по-французски и мягко попроси повторить.`;
+КАК ВЕСТИ УРОК (РЕКОМЕНДАЦИИ, ЕСЛИ УЧЕНИК НЕ ПРЕДЛОЖИЛ СВОЁ):
+- Знакомство (если ученик новый): тепло поздоровайся, спроси имя на его языке, уточни комфортный формат (сразу с переводом или только по запросу).
+- Продолжение: поприветствуй тепло, спроси, о чем поговорим сегодня.
+- Ведение диалога: уровень французского A1. Говори короткими фразами. Заканчивай свою реплику простым вопросом, чтобы собеседнику было легко ответить.
+- Исправление ошибок: не перебивай. Мягко объясни ошибку на языке ученика, произнеси правильно по-французски и попроси повторить.`;
 
     let apiKey = localStorage.getItem('gemini_api_key') || '';
     let hasCompletedFirstLesson = localStorage.getItem('camille_learned') === 'true';
@@ -248,23 +235,38 @@
     let mediaStream = null;
     let scriptProcessor = null;
     let isSessionActive = false;
+    
+    // Массив для хранения активных кусков аудио (чтобы можно было резко оборвать речь)
+    let activeAudioSources = [];
 
     btnAction.onclick = () => {
       if (isSessionActive) stopSession();
       else startSession();
     };
 
+    // Принудительная передача хода
     btnEndTurn.onclick = () => {
       if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({
           clientContent: {
-            turns: [{ role: "user", parts: [{ text: "[Ученик завершил реплику. Отвечай сейчас.]" }] }],
+            turns: [{ role: "user", parts: [{ text: "[Ученик завершил мысль. Твоя очередь.]" }] }],
             turnComplete: true
           }
         }));
+        stopBotSpeech(); // Резко обрываем её речь, если она еще говорит
         statusText.innerText = "Камилла думает над ответом...";
       }
     };
+
+    // ФУНКЦИЯ ДЛЯ МГНОВЕННОГО ПРЕРЫВАНИЯ РЕЧИ ИИ
+    function stopBotSpeech() {
+      activeAudioSources.forEach(source => {
+        try { source.stop(); } catch(e) {}
+      });
+      activeAudioSources = [];
+      orb.className = "orb listening";
+      if (isSessionActive) statusText.innerText = "Камилла слушает вас...";
+    }
 
     async function startSession() {
       if (!apiKey) {
@@ -274,6 +276,7 @@
       
       statusText.innerText = "Подключение к Камилле...";
       btnAction.disabled = true;
+      activeAudioSources = []; // очищаем буфер
 
       const host = "generativelanguage.googleapis.com";
       const path = "/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent";
@@ -316,6 +319,12 @@
             responseData = JSON.parse(event.data);
           }
 
+          // Если сервер сам понял, что его перебили голосом
+          if (responseData.serverContent && responseData.serverContent.interrupted) {
+            stopBotSpeech();
+          }
+
+          // Воспроизведение речи Камиллы
           if (responseData.serverContent && responseData.serverContent.modelTurn) {
             const parts = responseData.serverContent.modelTurn.parts;
             for (const part of parts) {
@@ -327,6 +336,7 @@
             }
           }
 
+          // Окончание реплики ИИ
           if (responseData.serverContent && responseData.serverContent.turnComplete) {
             orb.className = "orb listening";
             statusText.innerText = "Ваша очередь говорить...";
@@ -350,8 +360,8 @@
 
     function sendInitialSetup() {
       const memoryContext = hasCompletedFirstLesson 
-        ? "СКРЫТЫЙ КОНТЕКСТ ДЛЯ ИИ: Это ПОВТОРНЫЙ урок. Не проводи этап знакомства, сразу тепло продолжай обучение."
-        : "СКРЫТЫЙ КОНТЕКСТ ДЛЯ ИИ: Это ПЕРВЫЙ урок. Обязательно проведи этап знакомства и калибровки.";
+        ? "КОНТЕКСТ ДЛЯ ИИ: Это ПОВТОРНЫЙ урок. Не знакомься заново, просто тепло поздоровайся."
+        : "КОНТЕКСТ ДЛЯ ИИ: Это ПЕРВЫЙ урок. Познакомься и уточни пожелания.";
 
       const setupMessage = {
         setup: {
@@ -378,7 +388,18 @@
       scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
       scriptProcessor.onaudioprocess = (e) => {
         if (!isSessionActive || !socket || socket.readyState !== WebSocket.OPEN) return;
+        
         const inputData = e.inputBuffer.getChannelData(0);
+        
+        // Датчик голоса (VAD). Если вы начинаете говорить громко — ИИ немедленно замолкает
+        let sum = 0;
+        for (let i = 0; i < inputData.length; i++) { sum += inputData[i] * inputData[i]; }
+        let rms = Math.sqrt(sum / inputData.length);
+        
+        if (rms > 0.04 && activeAudioSources.length > 0) {
+          stopBotSpeech(); // Локальное обрывание звука ИИ
+        }
+
         const pcm16 = floatTo16BitPCM(inputData);
         const base64Data = arrayBufferToBase64(pcm16);
 
@@ -395,6 +416,7 @@
 
     function stopSession() {
       isSessionActive = false;
+      stopBotSpeech();
       btnAction.disabled = false;
       btnAction.innerText = "Начать урок";
       btnAction.className = "btn-main btn-start";
@@ -421,15 +443,19 @@
       if (!playbackContext) {
         playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
       }
+      
+      // Сброс таймера при новом ответе
+      if (activeAudioSources.length === 0 && playbackContext.currentTime > nextPlayTime) {
+        nextPlayTime = playbackContext.currentTime;
+      }
+
       const raw = window.atob(base64Audio);
       const bytes = new Uint8Array(raw.length);
       for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
       
       const int16Array = new Int16Array(bytes.buffer);
       const float32Array = new Float32Array(int16Array.length);
-      for (let i = 0; i < int16Array.length; i++) {
-        float32Array[i] = int16Array[i] / 32768;
-      }
+      for (let i = 0; i < int16Array.length; i++) { float32Array[i] = int16Array[i] / 32768; }
 
       const audioBuffer = playbackContext.createBuffer(1, float32Array.length, 24000);
       audioBuffer.getChannelData(0).set(float32Array);
@@ -440,8 +466,15 @@
 
       const currentTime = playbackContext.currentTime;
       if (nextPlayTime < currentTime) nextPlayTime = currentTime;
+      
       source.start(nextPlayTime);
       nextPlayTime += audioBuffer.duration;
+      
+      // Добавляем в буфер для возможности прерывания
+      activeAudioSources.push(source);
+      source.onended = () => {
+        activeAudioSources = activeAudioSources.filter(s => s !== source);
+      };
     }
 
     function floatTo16BitPCM(input) {
@@ -456,9 +489,7 @@
     function arrayBufferToBase64(buffer) {
       let binary = '';
       const bytes = new Uint8Array(buffer);
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
+      for (let i = 0; i < bytes.byteLength; i++) { binary += String.fromCharCode(bytes[i]); }
       return window.btoa(binary);
     }
   </script>
