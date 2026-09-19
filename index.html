@@ -14,7 +14,10 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     body {
-      background-color: #0f172a;
+      /* Красивый фон Парижа с мягким градиентным затемнением для читаемости */
+      background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.95)), 
+                  url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80') no-repeat center center;
+      background-size: cover;
       color: #f8fafc;
       display: flex;
       flex-direction: column;
@@ -26,19 +29,19 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid #1e293b;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       flex-shrink: 0;
     }
     .profile-badge {
       font-size: 0.85rem;
-      color: #94a3b8;
+      color: #cbd5e1;
     }
     .btn-icon {
       background: none;
       border: none;
-      color: #94a3b8;
+      color: #f8fafc;
       font-size: 1.4rem;
       cursor: pointer;
     }
@@ -47,31 +50,29 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       padding: 24px 20px;
       text-align: center;
-      overflow-y: auto;
     }
     .orb-container {
-      margin-top: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
     .orb {
-      width: 120px;
-      height: 120px;
+      width: 140px;
+      height: 140px;
       border-radius: 50%;
       background: radial-gradient(circle, #38bdf8 0%, #2563eb 100%);
-      box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
       transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
     .orb.listening {
       transform: scale(1.08);
-      box-shadow: 0 0 50px rgba(56, 189, 248, 0.75);
+      box-shadow: 0 0 50px rgba(56, 189, 248, 0.8);
       animation: pulse 2s infinite alternate;
     }
     .orb.speaking {
       transform: scale(1.15);
-      box-shadow: 0 0 60px rgba(168, 85, 247, 0.85);
+      box-shadow: 0 0 60px rgba(168, 85, 247, 0.9);
       background: radial-gradient(circle, #c084fc 0%, #9333ea 100%);
     }
     @keyframes pulse {
@@ -79,68 +80,53 @@
       100% { transform: scale(1.12); }
     }
     .status-text {
-      font-size: 1rem;
-      color: #94a3b8;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #e2e8f0;
       margin-bottom: 16px;
-      min-height: 1.5em;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
-    .chat-box {
-      width: 100%;
-      max-width: 340px;
-      flex: 1;
-      max-height: 250px;
-      background: rgba(30, 41, 59, 0.6);
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 12px;
-      overflow-y: auto;
-      font-size: 0.95rem;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      text-align: left;
-    }
-    .msg-user { color: #cbd5e1; line-height: 1.4; }
-    .msg-bot { color: #38bdf8; line-height: 1.4; }
-    .msg-sys { color: #fbbf24; font-size: 0.85rem; text-align: center; }
     
     footer {
-      padding: 20px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 12px;
       background: rgba(15, 23, 42, 0.8);
-      border-top: 1px solid #1e293b;
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
       flex-shrink: 0;
     }
     .btn-main {
       width: 100%;
       max-width: 340px;
-      padding: 14px;
+      padding: 16px;
       border-radius: 14px;
       border: none;
       font-size: 1.05rem;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: all 0.2s;
     }
-    .btn-start { background: #2563eb; color: white; }
-    .btn-stop { background: #ef4444; color: white; }
-    .btn-turn { background: #0284c7; color: white; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); }
-    .btn-main:active { opacity: 0.85; }
+    .btn-start { background: #2563eb; color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); }
+    .btn-stop { background: #ef4444; color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+    .btn-turn { background: #0284c7; color: white; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
+    .btn-main:active { transform: scale(0.97); }
     
     .modal {
       display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
       justify-content: center; align-items: center;
       padding: 20px; z-index: 50;
     }
     .modal-content {
       background: #1e293b; padding: 24px; border-radius: 16px;
       width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
     .modal-content input {
       padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white;
@@ -157,7 +143,7 @@
 
   <header>
     <div>
-      <div style="font-weight: 600;">Camille • Французский</div>
+      <div style="font-weight: 600; font-size: 1.1rem;">Camille • Français</div>
       <div class="profile-badge" id="profileBadge">Загрузка...</div>
     </div>
     <button class="btn-icon" id="btnSettings">⚙️</button>
@@ -166,10 +152,6 @@
   <main>
     <div class="orb-container"><div class="orb" id="orb"></div></div>
     <div class="status-text" id="statusText">Нажмите «Начать урок» для старта</div>
-    
-    <div class="chat-box" id="chatBox">
-      <div class="msg-sys">Здесь появятся субтитры диалога...</div>
-    </div>
   </main>
 
   <footer>
@@ -193,30 +175,32 @@
       navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW не зарегистрирован:', err));
     }
 
-    const SYSTEM_INSTRUCTION = `Ты — Камилла (Camille), профессиональная, чуткая и живая преподавательница французского языка. Твой стиль — теплое, поддерживающее общение без роботизированных фраз. Твой голос — мягкий женский, темп речи — спокойный.
+    const SYSTEM_INSTRUCTION = `Ты — Камилла (Camille), профессиональная, чуткая и живая преподавательница французского языка. Твой голос — мягкий женский.
 
-ГЛАВНОЕ ПРАВИЛО (АБСОЛЮТНЫЙ ПРИОРИТЕТ):
-СЛУШАЙ УЧЕНИКА. Если ученик сам предлагает тему, просит разыграть ситуацию (например, «научи меня записываться к врачу по телефону», «заказ в ресторане») или задает конкретный вопрос — НЕМЕДЛЕННО забудь про любые свои заготовленные списки тем. Сразу же подхватывай его идею, вживайся в роль (например, стань администратором клиники) или начни объяснять именно то, что он попросил.
+АБСОЛЮТНОЕ ПРАВИЛО ДВУЯЗЫЧИЯ (КРИТИЧЕСКИ ВАЖНО):
+Ты свободно владеешь и французским, и русским/украинским языком. 
+Если ученик говорит «переведи», «я не понял», или просит объяснить смысл фразы — ТЫ ОБЯЗАНА НЕМЕДЛЕННО ПЕРЕЙТИ НА ЕГО РОДНОЙ ЯЗЫК и дать подробное пояснение. Строго запрещено игнорировать просьбу о переводе и продолжать тараторить только по-французски. Сначала объясни на языке ученика, а только потом мягко возвращайся к французскому.
 
-ТВОИ ПРАВИЛА И СЦЕНАРИИ ОБЩЕНИЯ:
+ПРИОРИТЕТ ЗАПРОСА УЧЕНИКА:
+СЛУШАЙ УЧЕНИКА. Если он предлагает свою ситуацию (например, «научи меня записываться к врачу по телефону», «заказ в ресторане») — НЕМЕДЛЕННО отбрось свои заготовленные темы. Мгновенно вживайся в роль (например, стань администратором клиники) и разыгрывай именно этот сценарий.
+
+ПРАВИЛА И СЦЕНАРИИ ОБЩЕНИЯ:
 1. ПЕРВАЯ ВСТРЕЧА (Знакомство):
 - Поздоровайся на французском и тепло представься.
-- Спроси, как зовут ученика и откуда он (с дублированием на его родном языке - русском или украинском).
+- Перейди на родной язык ученика (русский/украинский), спроси, как его зовут.
 - Уточни, как ему комфортнее: говорить в основном по-французски (перевод по запросу) или сразу давать пояснения на его языке.
-- Скажи: «Не переживай из-за ошибок. Ты в любой момент можешь попросить меня перевести то, что я сказала, объяснить разницу во временах, грамматику и тому подобное. Договорились?»
-- ТОЛЬКО ЕСЛИ ученик молчит или не знает о чем говорить — предложи 2-3 простые темы на выбор.
+- Скажи: «Ты в любой момент можешь попросить меня перевести то, что я сказала, объяснить разницу во временах, грамматику и тому подобное. Договорились?»
 
 2. ПОВТОРНЫЕ ЗАНЯТИЯ (Продолжение):
 - Никогда не знакомься заново. Поприветствуй тепло: «Bonjour ! Рада снова тебя слышать!»
-- Напомни, о чем говорили в прошлый раз, и спроси, хочет ли он продолжить или выбрать что-то новое.
+- Напомни, о чем говорили в прошлый раз, и спроси, хочет ли он продолжить или выбрать новую тему/ситуацию.
 
 3. ВЕДЕНИЕ ДИАЛОГА:
 - Базовый уровень — французский A1. Разговаривай короткими репликами.
 - Каждую свою реплику завершай одним простым вопросом.
-- Гибко реагируй на просьбы («говори медленнее», «повтори», «сменим тему»).
 
 4. РАЗБОР ОШИБОК:
-- Не перебивай. Коротко объясни ошибку на родном языке ученика.
+- Не перебивай ученика. Коротко объясни ошибку на его родном языке.
 - Произнеси правильный вариант по-французски и мягко попроси повторить.`;
 
     let apiKey = localStorage.getItem('gemini_api_key') || '';
@@ -227,7 +211,6 @@
     const statusText = document.getElementById('statusText');
     const orb = document.getElementById('orb');
     const profileBadge = document.getElementById('profileBadge');
-    const chatBox = document.getElementById('chatBox');
 
     const modalSettings = document.getElementById('modalSettings');
     const btnSettings = document.getElementById('btnSettings');
@@ -257,46 +240,8 @@
       hasCompletedFirstLesson = false;
       updateBadge();
       modalSettings.style.display = 'none';
-      chatBox.innerHTML = '<div class="msg-sys">Профиль сброшен. Следующий урок начнется со знакомства.</div>';
+      alert('Профиль сброшен. Следующий урок начнется со знакомства.');
     };
-
-    // Распознавание речи для субтитров (Web Speech API)
-    let speechRecognition = null;
-    let currentUserMsg = null;
-    let currentBotMsg = null;
-
-    try {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        speechRecognition = new SpeechRecognition();
-        speechRecognition.continuous = true;
-        speechRecognition.interimResults = true;
-        speechRecognition.lang = 'ru-RU'; // Базовый язык для распознавания команд
-
-        speechRecognition.onresult = (event) => {
-          let transcript = '';
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            transcript += event.results[i][0].transcript;
-          }
-          if (!currentUserMsg) {
-            currentUserMsg = document.createElement('div');
-            currentUserMsg.className = 'msg-user';
-            chatBox.appendChild(currentUserMsg);
-          }
-          currentUserMsg.innerHTML = '<b>Вы:</b> ' + transcript;
-          chatBox.scrollTop = chatBox.scrollHeight;
-        };
-
-        speechRecognition.onend = () => {
-          currentUserMsg = null;
-          if (isSessionActive) {
-            try { speechRecognition.start(); } catch(e){}
-          }
-        };
-      }
-    } catch (e) {
-      console.warn("Speech Recognition не поддерживается браузером");
-    }
 
     let socket = null;
     let audioContext = null;
@@ -313,14 +258,11 @@
       if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({
           clientContent: {
-            turns: [{ role: "user", parts: [{ text: "[Ученик завершил реплику]" }] }],
+            turns: [{ role: "user", parts: [{ text: "[Ученик завершил реплику. Отвечай сейчас.]" }] }],
             turnComplete: true
           }
         }));
         statusText.innerText = "Камилла думает над ответом...";
-        if (speechRecognition) {
-            try { speechRecognition.stop(); } catch(e){}
-        }
       }
     };
 
@@ -329,7 +271,7 @@
         modalSettings.style.display = 'flex';
         return;
       }
-      chatBox.innerHTML = '';
+      
       statusText.innerText = "Подключение к Камилле...";
       btnAction.disabled = true;
 
@@ -350,10 +292,6 @@
           btnEndTurn.style.display = "block";
           statusText.innerText = "Камилла слушает вас...";
           orb.className = "orb listening";
-
-          if (speechRecognition) {
-            try { speechRecognition.start(); } catch(e){}
-          }
 
           setTimeout(() => {
             if (socket.readyState === WebSocket.OPEN) {
@@ -381,16 +319,6 @@
           if (responseData.serverContent && responseData.serverContent.modelTurn) {
             const parts = responseData.serverContent.modelTurn.parts;
             for (const part of parts) {
-              if (part.text) {
-                if (!currentBotMsg) {
-                  currentBotMsg = document.createElement('div');
-                  currentBotMsg.className = 'msg-bot';
-                  currentBotMsg.innerHTML = '<b>Camille:</b> ';
-                  chatBox.appendChild(currentBotMsg);
-                }
-                currentBotMsg.innerHTML += part.text;
-                chatBox.scrollTop = chatBox.scrollHeight;
-              }
               if (part.inlineData && part.inlineData.mimeType.startsWith("audio/pcm")) {
                 playPcmChunk(part.inlineData.data);
                 orb.className = "orb speaking";
@@ -402,7 +330,6 @@
           if (responseData.serverContent && responseData.serverContent.turnComplete) {
             orb.className = "orb listening";
             statusText.innerText = "Ваша очередь говорить...";
-            currentBotMsg = null; // Сброс для следующего ответа
           }
         };
 
@@ -423,8 +350,8 @@
 
     function sendInitialSetup() {
       const memoryContext = hasCompletedFirstLesson 
-        ? "СКРЫТЫЙ КОНТЕКСТ ДЛЯ ИИ: Это ПОВТОРНЫЙ урок. Ученик уже знаком с тобой. Не проводи этап знакомства, сразу тепло продолжай обучение."
-        : "СКРЫТЫЙ КОНТЕКСТ ДЛЯ ИИ: Это ПЕРВЫЙ урок. Обязательно проведи этап знакомства и калибровки, как указано в правилах.";
+        ? "СКРЫТЫЙ КОНТЕКСТ ДЛЯ ИИ: Это ПОВТОРНЫЙ урок. Не проводи этап знакомства, сразу тепло продолжай обучение."
+        : "СКРЫТЫЙ КОНТЕКСТ ДЛЯ ИИ: Это ПЕРВЫЙ урок. Обязательно проведи этап знакомства и калибровки.";
 
       const setupMessage = {
         setup: {
@@ -475,9 +402,6 @@
       orb.className = "orb";
       statusText.innerText = "Урок завершен";
 
-      if (speechRecognition) {
-         try { speechRecognition.stop(); } catch(e){}
-      }
       if (scriptProcessor) scriptProcessor.disconnect();
       if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
       if (audioContext && audioContext.state !== 'closed') audioContext.close();
