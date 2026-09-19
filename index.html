@@ -151,12 +151,19 @@ Directives absolues :
 
         socket.onerror = (err) => {
           console.error("Socket error", err);
-          stopSession();
-          statusText.innerText = "Erreur de connexion (vérifiez la clé API)";
+          statusText.innerText = "Ошибка соединения с Gemini API";
         };
 
-        socket.onclose = () => {
+        socket.onclose = (event) => {
+          console.log("Соединение закрыто:", event.code, event.reason);
           stopSession();
+          if (event.code === 1000) {
+            statusText.innerText = "Урок завершен";
+          } else if (event.reason) {
+            statusText.innerText = `Ошибка сервера: ${event.reason}`;
+          } else {
+            statusText.innerText = `Сбой подключения (код ${event.code}). Проверьте ключ.`;
+          }
         };
 
       } catch (e) {
@@ -169,7 +176,7 @@ Directives absolues :
     function sendInitialSetup() {
       const setupMessage = {
         setup: {
-          model: "models/gemini-2.0-flash-exp",
+          model: "models/gemini-3.8-flash-exp",
           generationConfig: {
             responseModalities: ["AUDIO"],
             speechConfig: {
