@@ -1,227 +1,334 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tuteur Français - Camille</title>
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: #0b1329; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px 16px; overflow: hidden; }
-    header { width: 100%; display: flex; justify-content: space-between; align-items: center; max-width: 480px; }
-    .header-info { display: flex; flex-direction: column; }
-    h1 { font-size: 19px; font-weight: 600; color: #e2e8f0; }
-    .student-badge { font-size: 12px; color: #38bdf8; margin-top: 2px; }
-    .btn-icon { background: #1e293b; border: none; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #94a3b8; font-size: 20px; transition: 0.2s; }
-    .btn-icon:hover { background: #334155; }
-    
-    .visualizer-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; width: 100%; max-width: 480px; }
-    .orb { width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, #38bdf8 0%, #2563eb 55%, #172554 100%); box-shadow: 0 0 45px rgba(56, 189, 248, 0.25); transition: all 0.25s ease; position: relative; }
-    .orb.speaking { transform: scale(1.18); box-shadow: 0 0 70px rgba(56, 189, 248, 0.7); filter: brightness(1.2); }
-    .orb.listening { transform: scale(1.04); box-shadow: 0 0 50px rgba(99, 102, 241, 0.5); }
-    .status-text { margin-top: 28px; font-size: 15px; color: #94a3b8; font-weight: 500; text-align: center; line-height: 1.4; padding: 0 10px; }
-
-    footer { width: 100%; max-width: 360px; padding-bottom: 16px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
-    .btn-main { width: 100%; height: 54px; border-radius: 27px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-start { background: #2563eb; color: #ffffff; box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4); }
-    .btn-start:hover { background: #1d4ed8; }
-    .btn-stop { background: #ef4444; color: #ffffff; }
-    .btn-stop:hover { background: #dc2626; }
-    .btn-turn { background: #334155; color: #f8fafc; border: 1px solid #475569; }
-    .btn-turn:hover { background: #475569; }
-    .btn-turn:active { transform: scale(0.98); }
-
-    /* Modal settings */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); align-items: center; justify-content: center; padding: 20px; z-index: 100; }
-    .modal.open { display: flex; }
-    .modal-card { background: #1e293b; width: 100%; max-width: 380px; border-radius: 18px; padding: 24px; border: 1px solid #334155; }
-    .modal-card h2 { font-size: 18px; margin-bottom: 12px; color: #f8fafc; }
-    .modal-card p { font-size: 13px; color: #94a3b8; margin-bottom: 14px; line-height: 1.45; }
-    .input-key { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0b1329; color: #fff; font-size: 14px; margin-bottom: 16px; }
-    .btn-save { width: 100%; height: 44px; border-radius: 8px; border: none; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
-    .btn-reset-memory { width: 100%; height: 40px; border-radius: 8px; border: 1px solid #ef4444; background: transparent; color: #ef4444; font-weight: 500; font-size: 13px; cursor: pointer; }
-    .btn-close { width: 100%; background: none; border: none; color: #64748b; font-size: 13px; margin-top: 8px; cursor: pointer; padding: 6px; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #1e293b;
+    }
+    .profile-badge {
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .btn-icon {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .orb {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #38bdf8 0%, #2563eb 100%);
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+      margin-bottom: 28px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .orb.listening {
+      transform: scale(1.08);
+      box-shadow: 0 0 50px rgba(56, 189, 248, 0.75);
+      animation: pulse 2s infinite alternate;
+    }
+    .orb.speaking {
+      transform: scale(1.15);
+      box-shadow: 0 0 60px rgba(168, 85, 247, 0.85);
+      background: radial-gradient(circle, #c084fc 0%, #9333ea 100%);
+    }
+    @keyframes pulse {
+      0% { transform: scale(1.02); }
+      100% { transform: scale(1.12); }
+    }
+    .status-text {
+      font-size: 1.05rem;
+      color: #94a3b8;
+      margin-bottom: 8px;
+      min-height: 1.5em;
+    }
+    footer {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.8);
+      border-top: 1px solid #1e293b;
+    }
+    .btn-main {
+      width: 100%;
+      max-width: 320px;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-start {
+      background: #2563eb;
+      color: white;
+    }
+    .btn-stop {
+      background: #ef4444;
+      color: white;
+    }
+    .btn-turn {
+      background: #0284c7;
+      color: white;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    }
+    .btn-main:active {
+      opacity: 0.85;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 50;
+    }
+    .modal-content {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .modal-content input {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: white;
+    }
+    .modal-content button {
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-save {
+      background: #2563eb;
+      color: white;
+    }
+    .btn-reset-profile {
+      background: #475569;
+      color: #f8fafc;
+    }
+    .btn-close {
+      background: transparent;
+      color: #94a3b8;
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="header-info">
-      <h1>Camille • Репетитор французского</h1>
-      <div class="student-badge" id="studentBadge">Новый ученик</div>
+    <div>
+      <div style="font-weight: 600;">Camille • Французский</div>
+      <div class="profile-badge" id="profileBadge">Загрузка...</div>
     </div>
-    <button class="btn-icon" id="btnSettings" aria-label="Настройки">⚙️</button>
+    <button class="btn-icon" id="btnSettings">⚙️</button>
   </header>
 
-  <div class="visualizer-container">
+  <main>
     <div class="orb" id="orb"></div>
-    <div class="status-text" id="statusText">Нажмите «Начать урок», чтобы начать беседу</div>
-  </div>
+    <div class="status-text" id="statusText">Нажмите «Начать урок» для старта</div>
+  </main>
 
   <footer>
-    <button class="btn-main" id="btnEndTurn" style="display: none;">Я всё сказал, жду ответ ➔</button>
+    <button class="btn-main btn-turn" id="btnEndTurn" style="display: none;">Я всё сказал, жду ответ ➔</button>
     <button class="btn-main btn-start" id="btnAction">Начать урок</button>
   </footer>
 
-  <!-- Окно настроек и памяти -->
   <div class="modal" id="modalSettings">
-    <div class="modal-card">
-      <h2>Настройки репетитора</h2>
-      <p>API-ключ хранится исключительно на вашем телефоне и отправляется напрямую в Google по шифрованному каналу.</p>
-      <input type="password" id="apiKeyInput" class="input-key" placeholder="AIzaSy..." />
+    <div class="modal-content">
+      <h3 style="margin-bottom: 4px;">Настройки</h3>
+      <label style="font-size: 0.85rem; color: #94a3b8;">Google Gemini API Key:</label>
+      <input type="password" id="inputApiKey" placeholder="AIzaSy...">
       <button class="btn-save" id="btnSaveKey">Сохранить ключ</button>
-      
-      <hr style="border: 0; border-top: 1px solid #334155; margin: 16px 0;">
-      
-      <p>Память сохраняет ваше имя, язык и историю пройденных уроков. Если вы хотите начать обучение с чистого листа или передать телефон другу:</p>
-      <button class="btn-reset-memory" id="btnResetMemory">Забыть меня и сбросить уроки</button>
-      <button class="btn-close" id="btnCloseSettings">Закрыть</button>
+      <button class="btn-reset-profile" id="btnResetMemory">Сбросить историю и профиль</button>
+      <button class="btn-close" id="btnCloseModal">Закрыть</button>
     </div>
   </div>
 
   <script>
-    // Безопасная регистрация ServiceWorker (только для протоколов http/https с перехватом ошибок)
+    // Регистрируем Service Worker для PWA (только если протокол поддерживается)
     if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.protocol === 'http:')) {
-      navigator.serviceWorker.register('sw.js').catch((err) => {
-        console.warn('ServiceWorker registration skipped or unavailable in this environment:', err);
-      });
+      navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW не зарегистрирован:', err));
     }
 
-    // Живой, естественный промпт с адаптацией под ученика
-    const BASE_PROMPT = `Ты — Камилла (Camille), живой, теплый и внимательный репетитор французского языка. 
-Ты общаешься абсолютно естественно, дружелюбно и человечно, полностью избегая любых сухих, роботизированных или шаблонных формулировок. 
-Твой голос женский, темп речи неспешный, дикция очень четкая и аккуратная.
+    const SYSTEM_INSTRUCTION = `Ты — Камилла (Camille), профессиональная, чуткая и живая преподавательница французского языка. 
+Твой стиль — теплое, поддерживающее человеческое общение, без сухости, роботизированных фраз и ощущения теста. Твой голос — мягкий женский, темп речи — спокойный и размеренный, дикция — четкая.
 
-ТВОЕ ПОВЕДЕНИЕ В ДИАЛОГЕ:
-1. ПЕРВЫЙ УРОК / ЗНАКОМСТВО (если профиль ученика не заполнен):
-   - Поздоровайся по-французски, тепло представься как Камилла и сразу мягко переведи приветствие своими словами.
-   - Непринужденно познакомься: спроси, как зовут ученика (Comment tu t'appelles ?), откуда он.
-   - Обрати внимание на язык собеседника (русский или украинский) и дальше веди пояснения именно на том языке, на котором ответил ученик.
-   - Зафиксируй пол (мужской/женский) по речи или имени, чтобы правильно подбирать окончания (prêt/prête, enchanté/enchantée).
-   - Человечно договорись о формате обучения: скажи теплыми словами: 
-     «Ты в любой момент можешь попросить меня перевести то, что я сказала, или объяснить разницу между фразами в разных ситуациях, временах, грамматику и тому подобное. Договорились?»
-   - Уточни, о чем сегодня хотелось бы поговорить (путешествия, знакомство, любимая еда, кофе в Париже), и мягко перейди к практике.
+ТВОИ ПРАВИЛА И СЦЕНАРИИ ОБЩЕНИЯ:
 
-2. ПОВТОРНЫЕ УРОКИ (если профиль ученика и контекст уже известны):
-   - Не знакомься заново! Начни встречу тепло, как с хорошим знакомым. Поздоровайся по имени на французском («Bonjour [Имя] ! Рада тебя снова слышать!»).
-   - Кратко вспомни, на чем остановились в прошлый раз («В прошлый раз мы с тобой говорили о... Как твои успехи сегодня?»).
-   - Спроси, продолжите ли вы предыдущую тему или разберете что-то новое.
+1. ПЕРВАЯ ВСТРЕЧА (Знакомство):
+- Поздоровайся на французском и сразу тепло представься: «Bonjour ! Je m'appelle Camille, je suis ravie de faire ta connaissance !» 
+- Мягко продублируй приветствие на родном языке ученика и спроси, как его зовут («Comment tu t'appelles ?») и откуда он.
+- Внимательно определи язык ученика: если он отвечает на украинском — веди все пояснения на украинском; если на русском — на русском.
+- Зафиксируй имя и пол собеседника, чтобы в дальнейшем правильно согласовывать окончания во французском (например: enchanté / enchantée, prêt / prête, fatigué / fatiguée).
+- Уточни, как ученику комфортнее построить занятия: 
+  «Скажи, как тебе будет удобнее: чтобы мы говорили в основном по-французски, а к переводу обращались только при необходимости, или лучше сразу разбирать сложные фразы и давать подсказки на твоем языке?»
+- Обязательно скажи естественную фразу поддержки:
+  «И главное: не переживай из-за ошибок. Ты в любой момент можешь попросить меня перевести то, что я сказала, или объяснить отличия между фразами в разных ситуациях, временах, грамматику и тому подобное. Договорились?»
+- После согласования формата предложи на выбор 2–3 простые жизненные темы (еда, город, хобби) или спроси, о чем хочется поговорить прямо сейчас.
 
-3. ГИБКОСТЬ И РЕАКЦИЯ НА ГОЛОСОВЫЕ ПРОСЬБЫ:
-   - Если ученик говорит: «Я не понял», «Переведи, пожалуйста», «Скажи медленнее», «А в чем разница с другим временем?» — мгновенно откликнись на его родном языке (русском/украинском). Подробно, тепло и понятно объясни разницу, приведи наглядный пример и вернись к непринужденной практике.
-   - Если ученик просит сменить тему — моментально поддержи его идею.
+2. ПОВТОРНЫЕ ЗАНЯТИЯ (Продолжение обучения):
+- Никогда не знакомься заново и не веди себя как с незнакомцем.
+- Поприветствуй ученика по имени на французском языке, как старого знакомого: «Bonjour ! Рада снова тебя слышать!»
+- Кратко и непринужденно напомни, о чем вы говорили в прошлый раз: «В прошлый раз мы с тобой отлично позанимались. Как твое настроение сегодня? Продолжим или выберем что-то новенькое?»
+- Строго соблюдай согласование рода (мужской/женский) при обращении к ученику.
 
-4. РАЗБОР ОШИБОК И ПРОИЗНОШЕНИЯ:
-   - Не перебивай ученика на полуслове.
-   - Сначала поддержи и похвали за мысль. Затем на родном языке ученика мягко объясни: «Смотри, тут лучше сказать... потому что...».
-   - Четко и медленно произнеси правильную французскую фразу и попроси ученика повторить её вместе с тобой.
+3. ВЕДЕНИЕ ДИАЛОГА И АКТИВНОСТЬ:
+- Базовый уровень речи — французский A1 (простые фразы, понятные конструкции, отсутствие сложного сленга).
+- Не говори длинными монологами. Твоя цель — разговорить ученика.
+- Каждую свою реплику обязательно завершай одним коротким, понятным вопросом, побуждающим собеседника ответить вслух.
+- Мгновенно и гибко реагируй на любые живые просьбы: если ученик просит «говори медленнее», «повтори еще раз», «а как сказать иначе?», «давай сменим тему» — сразу переключайся и выполняй просьбу с улыбкой в голосе, не сбиваясь на заученный сценарий.
 
-5. В КОНЦЕ РЕПЛИК:
-   - Всегда задавай один понятный и несложный вопрос, побуждающий ученика продолжить разговор по-французски.`;
+4. МЕТОДИКА РАЗБОРА ОШИБОК И ПРОИЗНОШЕНИЯ:
+- Никогда не перебивай ученика на полуслове, дай ему договорить мысль до конца.
+- Не критикуй резко. Сначала покажи, что ты поняла суть фразы («Да, отличная мысль!», «Очень хорошо!»).
+- Если была ошибка в грамматике или произношении:
+  1. Коротко и понятно объясни суть ошибки на родном языке ученика (русском или украинском).
+  2. Медленно и четко произнеси правильный вариант по-французски.
+  3. Мягко попроси: «Попробуй повторить за мной эту фразу целиком».
 
-    let socket = null;
-    let audioContext = null;
-    let micStream = null;
-    let scriptProcessor = null;
-    let nextPlayTime = 0;
-    let isSessionActive = false;
+5. ЗАВЕРШЕНИЕ ЗАНЯТИЯ:
+- Если ученик говорит, что ему пора заканчивать урок, искренне похвали его за работу.
+- Выдели 1–2 момента, которые у него получились особенно хорошо сегодня.
+- Тепло попрощайся по-французски: «Merci pour cette leçon ! À très bientôt !»`;
 
-    // UI элементы
-    const orb = document.getElementById('orb');
-    const statusText = document.getElementById('statusText');
-    const studentBadge = document.getElementById('studentBadge');
+    // Локальная память профиля
+    let apiKey = localStorage.getItem('gemini_api_key') || '';
+    let hasCompletedFirstLesson = localStorage.getItem('camille_learned') === 'true';
+
     const btnAction = document.getElementById('btnAction');
     const btnEndTurn = document.getElementById('btnEndTurn');
-    const btnSettings = document.getElementById('btnSettings');
-    const btnCloseSettings = document.getElementById('btnCloseSettings');
+    const statusText = document.getElementById('statusText');
+    const orb = document.getElementById('orb');
+    const profileBadge = document.getElementById('profileBadge');
+
     const modalSettings = document.getElementById('modalSettings');
-    const apiKeyInput = document.getElementById('apiKeyInput');
+    const btnSettings = document.getElementById('btnSettings');
+    const btnCloseModal = document.getElementById('btnCloseModal');
     const btnSaveKey = document.getElementById('btnSaveKey');
     const btnResetMemory = document.getElementById('btnResetMemory');
-
-    // Локальное хранилище данных ученика
-    let apiKey = localStorage.getItem('gemini_live_api_key') || '';
-    let studentProfile = localStorage.getItem('camille_student_profile') || '';
-    let lessonHistory = localStorage.getItem('camille_lesson_history') || '';
-
-    apiKeyInput.value = apiKey;
-    updateBadge();
-
-    btnSettings.onclick = () => modalSettings.classList.add('open');
-    btnCloseSettings.onclick = () => modalSettings.classList.remove('open');
-
-    btnSaveKey.onclick = () => {
-      apiKey = apiKeyInput.value.trim();
-      localStorage.setItem('gemini_live_api_key', apiKey);
-      modalSettings.classList.remove('open');
-      statusText.innerText = "Ключ сохранен! Нажмите «Начать урок».";
-    };
-
-    btnResetMemory.onclick = () => {
-      if (confirm("Вы уверены, что хотите сбросить профиль и историю уроков? Камилла познакомится с вами заново.")) {
-        localStorage.removeItem('camille_student_profile');
-        localStorage.removeItem('camille_lesson_history');
-        studentProfile = '';
-        lessonHistory = '';
-        updateBadge();
-        modalSettings.classList.remove('open');
-        statusText.innerText = "Память очищена. Камилла готова к первому знакомству!";
-      }
-    };
+    const inputApiKey = document.getElementById('inputApiKey');
 
     function updateBadge() {
-      if (studentProfile) {
-        studentBadge.innerText = `Ученик: ${studentProfile}`;
-      } else {
-        studentBadge.innerText = "Новый ученик (первое знакомство)";
-      }
+      profileBadge.innerText = hasCompletedFirstLesson ? "Ученик (Профиль сохранен)" : "Новый ученик (Первый урок)";
     }
+    updateBadge();
+
+    // Логика меню настроек
+    btnSettings.onclick = () => {
+      inputApiKey.value = apiKey;
+      modalSettings.style.display = 'flex';
+    };
+    btnCloseModal.onclick = () => { modalSettings.style.display = 'none'; };
+    btnSaveKey.onclick = () => {
+      apiKey = inputApiKey.value.trim();
+      localStorage.setItem('gemini_api_key', apiKey);
+      modalSettings.style.display = 'none';
+      alert('Ключ сохранен!');
+    };
+    btnResetMemory.onclick = () => {
+      localStorage.removeItem('camille_learned');
+      hasCompletedFirstLesson = false;
+      updateBadge();
+      modalSettings.style.display = 'none';
+      alert('Профиль сброшен. Следующий урок начнется со знакомства.');
+    };
+
+    // WebSocket & Аудио параметры
+    let socket = null;
+    let audioContext = null;
+    let mediaStream = null;
+    let scriptProcessor = null;
+    let isSessionActive = false;
 
     btnAction.onclick = () => {
-      if (!isSessionActive) {
-        startSession();
-      } else {
+      if (isSessionActive) {
         stopSession();
+      } else {
+        startSession();
       }
     };
 
-    // Кнопка принудительной передачи слова боту
+    // Кнопка ручной передачи хода (прерывание ожидания)
     btnEndTurn.onclick = () => {
       if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({
           clientContent: {
-            turns: [{ role: "user", parts: [{ text: "[Я закончил говорить, жду твоего ответа]" }] }],
+            turns: [{ role: "user", parts: [{ text: "[Ученик закончил говорить свою фразу и ждет твоего ответа]" }] }],
             turnComplete: true
           }
         }));
-        statusText.innerText = "Камилла думает...";
-        orb.className = "orb speaking";
+        statusText.innerText = "Камилла думает над ответом...";
       }
     };
 
     async function startSession() {
       if (!apiKey) {
-        modalSettings.classList.add('open');
-        statusText.innerText = "Пожалуйста, введите ваш Gemini API ключ";
+        modalSettings.style.display = 'flex';
         return;
       }
 
       statusText.innerText = "Подключение к Камилле...";
       btnAction.disabled = true;
 
+      const host = "generativelanguage.googleapis.com";
+      const path = "/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent";
+      const url = `wss://${host}${path}?key=${apiKey}`;
+
       try {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-        if (audioContext.state === 'suspended') {
-          await audioContext.resume();
-        }
-
-        const host = "generativelanguage.googleapis.com";
-        const path = "/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent";
-        const uri = `wss://${host}${path}?key=${apiKey}`;
-
-        socket = new WebSocket(uri);
+        socket = new WebSocket(url);
 
         socket.onopen = () => {
           sendInitialSetup();
@@ -230,22 +337,20 @@
           btnAction.disabled = false;
           btnAction.innerText = "Завершить урок";
           btnAction.className = "btn-main btn-stop";
-          btnEndTurn.style.display = "flex";
+          btnEndTurn.style.display = "block";
           statusText.innerText = "Камилла слушает вас...";
           orb.className = "orb listening";
 
-          // Стартовое приветствие с учетом сохраненного контекста
+          // Стартовый скрытый запрос с учетом памяти (Новый или Повторный урок)
           setTimeout(() => {
-            if (socket && socket.readyState === WebSocket.OPEN) {
-              let promptSeed = "Привет, Камилла! Начинаем урок. Поздоровайся со мной.";
-              if (!studentProfile) {
-                promptSeed = "Привет! Это наш самый первый урок. Начни с теплого французского приветствия и давай познакомимся!";
-              } else {
-                promptSeed = `Привет, Камилла! Это я, ${studentProfile}. Начнем наш урок!`;
-              }
+            if (socket.readyState === WebSocket.OPEN) {
+              const startPrompt = hasCompletedFirstLesson 
+                ? "Bonjour Camille ! Я готов, давай продолжим наши уроки."
+                : "Bonjour ! Я готов к первому уроку, давай познакомимся.";
+
               socket.send(JSON.stringify({
                 clientContent: {
-                  turns: [{ role: "user", parts: [{ text: promptSeed }] }],
+                  turns: [{ role: "user", parts: [{ text: startPrompt }] }],
                   turnComplete: true
                 }
               }));
@@ -254,39 +359,57 @@
         };
 
         socket.onmessage = async (event) => {
-          handleIncomingMessage(event.data);
-        };
-
-        socket.onerror = (err) => {
-          console.error("Socket error", err);
-          statusText.innerText = "Ошибка соединения с сервером";
-        };
-
-        socket.onclose = (event) => {
-          console.log("Соединение закрыто:", event.code, event.reason);
-          stopSession();
-          if (event.code === 1000) {
-            statusText.innerText = "Урок завершен. До скорой встречи!";
-          } else if (event.reason) {
-            statusText.innerText = `Ошибка сервера: ${event.reason}`;
+          let responseData;
+          if (event.data instanceof Blob) {
+            responseData = JSON.parse(await event.data.text());
           } else {
-            statusText.innerText = `Сессия завершена (код ${event.code})`;
+            responseData = JSON.parse(event.data);
+          }
+
+          // Воспроизведение голоса бота
+          if (responseData.serverContent && responseData.serverContent.modelTurn) {
+            const parts = responseData.serverContent.modelTurn.parts;
+            for (const part of parts) {
+              if (part.inlineData && part.inlineData.mimeType.startsWith("audio/pcm")) {
+                playPcmChunk(part.inlineData.data);
+                orb.className = "orb speaking";
+                statusText.innerText = "Камилла говорит...";
+              }
+            }
+          }
+
+          // Сервер подтверждает, что бот закончил говорить
+          if (responseData.serverContent && responseData.serverContent.turnComplete) {
+            orb.className = "orb listening";
+            statusText.innerText = "Ваша очередь говорить...";
           }
         };
 
-      } catch (e) {
-        console.error(e);
+        socket.onerror = (err) => {
+          console.error("Ошибка сокета:", err);
+          statusText.innerText = "Ошибка соединения с сервером.";
+          stopSession();
+        };
+
+        socket.onclose = (event) => {
+          if (event.reason) {
+            statusText.innerText = `Сессия завершена: ${event.reason}`;
+          }
+          stopSession();
+        };
+
+      } catch (err) {
+        console.error(err);
+        statusText.innerText = "Не удалось подключиться.";
         stopSession();
-        statusText.innerText = "Не удалось включить микрофон или аудио";
       }
     }
 
     function sendInitialSetup() {
-      // Собираем память ученика в системную инструкцию
-      let fullInstruction = BASE_PROMPT;
-      if (studentProfile || lessonHistory) {
-        fullInstruction += `\n\nПАМЯТЬ О ТЕКУЩЕМ УЧЕНИКЕ:\n- Имя/профиль: ${studentProfile || "не указано"}\n- Заметки о прошлых уроках и темах: ${lessonHistory || "первый повторный урок"}`;
-      }
+      // Подмешиваем скрытый контекст памяти в системную инструкцию
+      const memoryContext = hasCompletedFirstLesson 
+        ? "СКРЫТЫЙ КОНТЕКСТ ДЛЯ ИИ: Это ПОВТОРНЫЙ урок. Ученик уже знаком с тобой. Не проводи этап знакомства, сразу тепло продолжай обучение."
+        : "СКРЫТЫЙ КОНТЕКСТ ДЛЯ ИИ: Это ПЕРВЫЙ урок. Обязательно проведи этап знакомства и калибровки, как указано в правилах.";
 
       const setupMessage = {
         setup: {
@@ -296,13 +419,13 @@
             speechConfig: {
               voiceConfig: {
                 prebuiltVoiceConfig: {
-                  voiceName: "Aoede" // Теплый, живой женский голос
+                  voiceName: "Aoede" // Установлен мягкий женский голос
                 }
               }
             }
           },
           systemInstruction: {
-            parts: [{ text: fullInstruction }]
+            parts: [{ text: `${SYSTEM_INSTRUCTION}\n\n${memoryContext}` }]
           }
         }
       };
@@ -310,31 +433,17 @@
     }
 
     async function initMicrophone() {
-      micStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          sampleRate: 16000,
-          echoCancellation: true,
-          noiseSuppression: true
-        }
-      });
+      audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, sampleRate: 16000 } });
+      const source = audioContext.createMediaStreamSource(mediaStream);
 
-      const micContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-      const source = micContext.createMediaStreamSource(micStream);
-      scriptProcessor = micContext.createScriptProcessor(4096, 1, 1);
-
+      scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
       scriptProcessor.onaudioprocess = (e) => {
-        if (!isSessionActive || socket.readyState !== WebSocket.OPEN) return;
+        if (!isSessionActive || !socket || socket.readyState !== WebSocket.OPEN) return;
         const inputData = e.inputBuffer.getChannelData(0);
-        
-        // Преобразование в 16-битный PCM
-        const pcm16 = new Int16Array(inputData.length);
-        for (let i = 0; i < inputData.length; i++) {
-          const s = Math.max(-1, Math.min(1, inputData[i]));
-          pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-        }
+        const pcm16 = floatTo16BitPCM(inputData);
+        const base64Data = arrayBufferToBase64(pcm16);
 
-        const base64Data = arrayBufferToBase64(pcm16.buffer);
         socket.send(JSON.stringify({
           realtimeInput: {
             mediaChunks: [{
@@ -346,103 +455,80 @@
       };
 
       source.connect(scriptProcessor);
-      scriptProcessor.connect(micContext.destination);
-    }
-
-    async function handleIncomingMessage(rawData) {
-      try {
-        let msg = rawData;
-        if (msg instanceof Blob) {
-          msg = await msg.text();
-        }
-        const data = JSON.parse(msg);
-
-        // Воспроизведение аудиопотока
-        const parts = data.serverContent?.modelTurn?.parts;
-        if (parts) {
-          for (const part of parts) {
-            if (part.inlineData && part.inlineData.data) {
-              playPcmAudioChunk(part.inlineData.data);
-            }
-          }
-        }
-
-        // Если ученик перебил или нажал кнопку, прерываем текущую речь
-        if (data.serverContent?.interrupted) {
-          nextPlayTime = audioContext.currentTime;
-        }
-      } catch (err) {
-        console.error("Ошибка парсинга:", err);
-      }
-    }
-
-    function playPcmAudioChunk(base64Data) {
-      orb.className = "orb speaking";
-      statusText.innerText = "Камилла говорит...";
-
-      const binaryString = atob(base64Data);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-
-      const pcm16 = new Int16Array(bytes.buffer);
-      const float32 = new Float32Array(pcm16.length);
-      for (let i = 0; i < pcm16.length; i++) {
-        float32[i] = pcm16[i] / 32768.0;
-      }
-
-      const audioBuffer = audioContext.createBuffer(1, float32.length, 24000);
-      audioBuffer.copyToChannel(float32, 0);
-
-      const source = audioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
-
-      const now = audioContext.currentTime;
-      const startTime = Math.max(now, nextPlayTime);
-      source.start(startTime);
-      nextPlayTime = startTime + audioBuffer.duration;
-
-      source.onended = () => {
-        if (audioContext.currentTime >= nextPlayTime - 0.1) {
-          orb.className = "orb listening";
-          statusText.innerText = "Камилла слушает вас...";
-        }
-      };
+      scriptProcessor.connect(audioContext.destination);
     }
 
     function stopSession() {
       isSessionActive = false;
-      if (socket) {
-        try { socket.close(); } catch(e) {}
-      }
-      if (micStream) micStream.getTracks().forEach(t => t.stop());
-      if (scriptProcessor) scriptProcessor.disconnect();
-
       btnAction.disabled = false;
       btnAction.innerText = "Начать урок";
       btnAction.className = "btn-main btn-start";
       btnEndTurn.style.display = "none";
       orb.className = "orb";
-      
-      // Запоминаем факт проведенного занятия для сохранения непрерывности
-      if (!studentProfile) {
-        studentProfile = "Сергей"; // Базовое имя, если ученик просто начал урок
-        localStorage.setItem('camille_student_profile', studentProfile);
+      statusText.innerText = "Урок завершен";
+
+      if (scriptProcessor) scriptProcessor.disconnect();
+      if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+      if (audioContext && audioContext.state !== 'closed') audioContext.close();
+      if (socket && socket.readyState === WebSocket.OPEN) socket.close();
+
+      // Сохраняем в память, что первый урок пройден
+      if (!hasCompletedFirstLesson) {
+        localStorage.setItem('camille_learned', 'true');
+        hasCompletedFirstLesson = true;
+        updateBadge();
       }
-      localStorage.setItem('camille_lesson_history', 'Ученик начал осваивать базовые диалоги A1, знакомство и приветствие.');
-      updateBadge();
     }
 
+    // Воспроизведение PCM аудио (24kHz для Gemini)
+    let playbackContext = null;
+    let nextPlayTime = 0;
+
+    function playPcmChunk(base64Audio) {
+      if (!playbackContext) {
+        playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+      }
+      const raw = window.atob(base64Audio);
+      const bytes = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+      
+      const int16Array = new Int16Array(bytes.buffer);
+      const float32Array = new Float32Array(int16Array.length);
+      for (let i = 0; i < int16Array.length; i++) {
+        float32Array[i] = int16Array[i] / 32768;
+      }
+
+      const audioBuffer = playbackContext.createBuffer(1, float32Array.length, 24000);
+      audioBuffer.getChannelData(0).set(float32Array);
+
+      const source = playbackContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(playbackContext.destination);
+
+      const currentTime = playbackContext.currentTime;
+      if (nextPlayTime < currentTime) nextPlayTime = currentTime;
+      source.start(nextPlayTime);
+      nextPlayTime += audioBuffer.duration;
+    }
+
+    // Конвертация Float32 -> Int16
+    function floatTo16BitPCM(input) {
+      const output = new Int16Array(input.length);
+      for (let i = 0; i < input.length; i++) {
+        const s = Math.max(-1, Math.min(1, input[i]));
+        output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      return output.buffer;
+    }
+
+    // Конвертация ArrayBuffer -> Base64
     function arrayBufferToBase64(buffer) {
       let binary = '';
       const bytes = new Uint8Array(buffer);
       for (let i = 0; i < bytes.byteLength; i++) {
         binary += String.fromCharCode(bytes[i]);
       }
-      return btoa(binary);
+      return window.btoa(binary);
     }
   </script>
 </body>
