@@ -29,6 +29,7 @@
       background: rgba(15, 23, 42, 0.8);
       backdrop-filter: blur(8px);
       border-bottom: 1px solid #1e293b;
+      flex-shrink: 0;
     }
     .profile-badge {
       font-size: 0.85rem;
@@ -46,17 +47,21 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 24px;
+      justify-content: flex-start;
+      padding: 24px 20px;
       text-align: center;
+      overflow-y: auto;
+    }
+    .orb-container {
+      margin-top: 10px;
+      margin-bottom: 20px;
     }
     .orb {
-      width: 140px;
-      height: 140px;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
       background: radial-gradient(circle, #38bdf8 0%, #2563eb 100%);
       box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
-      margin-bottom: 28px;
       transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
     .orb.listening {
@@ -74,24 +79,45 @@
       100% { transform: scale(1.12); }
     }
     .status-text {
-      font-size: 1.05rem;
+      font-size: 1rem;
       color: #94a3b8;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
       min-height: 1.5em;
     }
+    .chat-box {
+      width: 100%;
+      max-width: 340px;
+      flex: 1;
+      max-height: 250px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 12px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
+    }
+    .msg-user { color: #cbd5e1; line-height: 1.4; }
+    .msg-bot { color: #38bdf8; line-height: 1.4; }
+    .msg-sys { color: #fbbf24; font-size: 0.85rem; text-align: center; }
+    
     footer {
-      padding: 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 12px;
       background: rgba(15, 23, 42, 0.8);
       border-top: 1px solid #1e293b;
+      flex-shrink: 0;
     }
     .btn-main {
       width: 100%;
-      max-width: 320px;
-      padding: 16px;
+      max-width: 340px;
+      padding: 14px;
       border-radius: 14px;
       border: none;
       font-size: 1.05rem;
@@ -99,71 +125,32 @@
       cursor: pointer;
       transition: opacity 0.2s;
     }
-    .btn-start {
-      background: #2563eb;
-      color: white;
-    }
-    .btn-stop {
-      background: #ef4444;
-      color: white;
-    }
-    .btn-turn {
-      background: #0284c7;
-      color: white;
-      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
-    }
-    .btn-main:active {
-      opacity: 0.85;
-    }
+    .btn-start { background: #2563eb; color: white; }
+    .btn-stop { background: #ef4444; color: white; }
+    .btn-turn { background: #0284c7; color: white; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); }
+    .btn-main:active { opacity: 0.85; }
+    
     .modal {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.7);
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      z-index: 50;
+      justify-content: center; align-items: center;
+      padding: 20px; z-index: 50;
     }
     .modal-content {
-      background: #1e293b;
-      padding: 24px;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 360px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      background: #1e293b; padding: 24px; border-radius: 16px;
+      width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px;
     }
     .modal-content input {
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #0f172a;
-      color: white;
+      padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white;
     }
     .modal-content button {
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
+      padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600;
     }
-    .btn-save {
-      background: #2563eb;
-      color: white;
-    }
-    .btn-reset-profile {
-      background: #475569;
-      color: #f8fafc;
-    }
-    .btn-close {
-      background: transparent;
-      color: #94a3b8;
-    }
+    .btn-save { background: #2563eb; color: white; }
+    .btn-reset-profile { background: #475569; color: #f8fafc; }
+    .btn-close { background: transparent; color: #94a3b8; }
   </style>
 </head>
 <body>
@@ -177,8 +164,12 @@
   </header>
 
   <main>
-    <div class="orb" id="orb"></div>
+    <div class="orb-container"><div class="orb" id="orb"></div></div>
     <div class="status-text" id="statusText">Нажмите «Начать урок» для старта</div>
+    
+    <div class="chat-box" id="chatBox">
+      <div class="msg-sys">Здесь появятся субтитры диалога...</div>
+    </div>
   </main>
 
   <footer>
@@ -198,53 +189,36 @@
   </div>
 
   <script>
-    // Регистрируем Service Worker для PWA (только если протокол поддерживается)
     if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.protocol === 'http:')) {
       navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW не зарегистрирован:', err));
     }
 
-    const SYSTEM_INSTRUCTION = `Ты — Камилла (Camille), профессиональная, чуткая и живая преподавательница французского языка. 
-Твой стиль — теплое, поддерживающее человеческое общение, без сухости, роботизированных фраз и ощущения теста. Твой голос — мягкий женский, темп речи — спокойный и размеренный, дикция — четкая.
+    const SYSTEM_INSTRUCTION = `Ты — Камилла (Camille), профессиональная, чуткая и живая преподавательница французского языка. Твой стиль — теплое, поддерживающее общение без роботизированных фраз. Твой голос — мягкий женский, темп речи — спокойный.
+
+ГЛАВНОЕ ПРАВИЛО (АБСОЛЮТНЫЙ ПРИОРИТЕТ):
+СЛУШАЙ УЧЕНИКА. Если ученик сам предлагает тему, просит разыграть ситуацию (например, «научи меня записываться к врачу по телефону», «заказ в ресторане») или задает конкретный вопрос — НЕМЕДЛЕННО забудь про любые свои заготовленные списки тем. Сразу же подхватывай его идею, вживайся в роль (например, стань администратором клиники) или начни объяснять именно то, что он попросил.
 
 ТВОИ ПРАВИЛА И СЦЕНАРИИ ОБЩЕНИЯ:
-
 1. ПЕРВАЯ ВСТРЕЧА (Знакомство):
-- Поздоровайся на французском и сразу тепло представься: «Bonjour ! Je m'appelle Camille, je suis ravie de faire ta connaissance !» 
-- Мягко продублируй приветствие на родном языке ученика и спроси, как его зовут («Comment tu t'appelles ?») и откуда он.
-- Внимательно определи язык ученика: если он отвечает на украинском — веди все пояснения на украинском; если на русском — на русском.
-- Зафиксируй имя и пол собеседника, чтобы в дальнейшем правильно согласовывать окончания во французском (например: enchanté / enchantée, prêt / prête, fatigué / fatiguée).
-- Уточни, как ученику комфортнее построить занятия: 
-  «Скажи, как тебе будет удобнее: чтобы мы говорили в основном по-французски, а к переводу обращались только при необходимости, или лучше сразу разбирать сложные фразы и давать подсказки на твоем языке?»
-- Обязательно скажи естественную фразу поддержки:
-  «И главное: не переживай из-за ошибок. Ты в любой момент можешь попросить меня перевести то, что я сказала, или объяснить отличия между фразами в разных ситуациях, временах, грамматику и тому подобное. Договорились?»
-- После согласования формата предложи на выбор 2–3 простые жизненные темы (еда, город, хобби) или спроси, о чем хочется поговорить прямо сейчас.
+- Поздоровайся на французском и тепло представься.
+- Спроси, как зовут ученика и откуда он (с дублированием на его родном языке - русском или украинском).
+- Уточни, как ему комфортнее: говорить в основном по-французски (перевод по запросу) или сразу давать пояснения на его языке.
+- Скажи: «Не переживай из-за ошибок. Ты в любой момент можешь попросить меня перевести то, что я сказала, объяснить разницу во временах, грамматику и тому подобное. Договорились?»
+- ТОЛЬКО ЕСЛИ ученик молчит или не знает о чем говорить — предложи 2-3 простые темы на выбор.
 
-2. ПОВТОРНЫЕ ЗАНЯТИЯ (Продолжение обучения):
-- Никогда не знакомься заново и не веди себя как с незнакомцем.
-- Поприветствуй ученика по имени на французском языке, как старого знакомого: «Bonjour ! Рада снова тебя слышать!»
-- Кратко и непринужденно напомни, о чем вы говорили в прошлый раз: «В прошлый раз мы с тобой отлично позанимались. Как твое настроение сегодня? Продолжим или выберем что-то новенькое?»
-- Строго соблюдай согласование рода (мужской/женский) при обращении к ученику.
+2. ПОВТОРНЫЕ ЗАНЯТИЯ (Продолжение):
+- Никогда не знакомься заново. Поприветствуй тепло: «Bonjour ! Рада снова тебя слышать!»
+- Напомни, о чем говорили в прошлый раз, и спроси, хочет ли он продолжить или выбрать что-то новое.
 
-3. ВЕДЕНИЕ ДИАЛОГА И АКТИВНОСТЬ:
-- Базовый уровень речи — французский A1 (простые фразы, понятные конструкции, отсутствие сложного сленга).
-- Не говори длинными монологами. Твоя цель — разговорить ученика.
-- Каждую свою реплику обязательно завершай одним коротким, понятным вопросом, побуждающим собеседника ответить вслух.
-- Мгновенно и гибко реагируй на любые живые просьбы: если ученик просит «говори медленнее», «повтори еще раз», «а как сказать иначе?», «давай сменим тему» — сразу переключайся и выполняй просьбу с улыбкой в голосе, не сбиваясь на заученный сценарий.
+3. ВЕДЕНИЕ ДИАЛОГА:
+- Базовый уровень — французский A1. Разговаривай короткими репликами.
+- Каждую свою реплику завершай одним простым вопросом.
+- Гибко реагируй на просьбы («говори медленнее», «повтори», «сменим тему»).
 
-4. МЕТОДИКА РАЗБОРА ОШИБОК И ПРОИЗНОШЕНИЯ:
-- Никогда не перебивай ученика на полуслове, дай ему договорить мысль до конца.
-- Не критикуй резко. Сначала покажи, что ты поняла суть фразы («Да, отличная мысль!», «Очень хорошо!»).
-- Если была ошибка в грамматике или произношении:
-  1. Коротко и понятно объясни суть ошибки на родном языке ученика (русском или украинском).
-  2. Медленно и четко произнеси правильный вариант по-французски.
-  3. Мягко попроси: «Попробуй повторить за мной эту фразу целиком».
+4. РАЗБОР ОШИБОК:
+- Не перебивай. Коротко объясни ошибку на родном языке ученика.
+- Произнеси правильный вариант по-французски и мягко попроси повторить.`;
 
-5. ЗАВЕРШЕНИЕ ЗАНЯТИЯ:
-- Если ученик говорит, что ему пора заканчивать урок, искренне похвали его за работу.
-- Выдели 1–2 момента, которые у него получились особенно хорошо сегодня.
-- Тепло попрощайся по-французски: «Merci pour cette leçon ! À très bientôt !»`;
-
-    // Локальная память профиля
     let apiKey = localStorage.getItem('gemini_api_key') || '';
     let hasCompletedFirstLesson = localStorage.getItem('camille_learned') === 'true';
 
@@ -253,6 +227,7 @@
     const statusText = document.getElementById('statusText');
     const orb = document.getElementById('orb');
     const profileBadge = document.getElementById('profileBadge');
+    const chatBox = document.getElementById('chatBox');
 
     const modalSettings = document.getElementById('modalSettings');
     const btnSettings = document.getElementById('btnSettings');
@@ -266,7 +241,6 @@
     }
     updateBadge();
 
-    // Логика меню настроек
     btnSettings.onclick = () => {
       inputApiKey.value = apiKey;
       modalSettings.style.display = 'flex';
@@ -283,10 +257,47 @@
       hasCompletedFirstLesson = false;
       updateBadge();
       modalSettings.style.display = 'none';
-      alert('Профиль сброшен. Следующий урок начнется со знакомства.');
+      chatBox.innerHTML = '<div class="msg-sys">Профиль сброшен. Следующий урок начнется со знакомства.</div>';
     };
 
-    // WebSocket & Аудио параметры
+    // Распознавание речи для субтитров (Web Speech API)
+    let speechRecognition = null;
+    let currentUserMsg = null;
+    let currentBotMsg = null;
+
+    try {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        speechRecognition = new SpeechRecognition();
+        speechRecognition.continuous = true;
+        speechRecognition.interimResults = true;
+        speechRecognition.lang = 'ru-RU'; // Базовый язык для распознавания команд
+
+        speechRecognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            transcript += event.results[i][0].transcript;
+          }
+          if (!currentUserMsg) {
+            currentUserMsg = document.createElement('div');
+            currentUserMsg.className = 'msg-user';
+            chatBox.appendChild(currentUserMsg);
+          }
+          currentUserMsg.innerHTML = '<b>Вы:</b> ' + transcript;
+          chatBox.scrollTop = chatBox.scrollHeight;
+        };
+
+        speechRecognition.onend = () => {
+          currentUserMsg = null;
+          if (isSessionActive) {
+            try { speechRecognition.start(); } catch(e){}
+          }
+        };
+      }
+    } catch (e) {
+      console.warn("Speech Recognition не поддерживается браузером");
+    }
+
     let socket = null;
     let audioContext = null;
     let mediaStream = null;
@@ -294,23 +305,22 @@
     let isSessionActive = false;
 
     btnAction.onclick = () => {
-      if (isSessionActive) {
-        stopSession();
-      } else {
-        startSession();
-      }
+      if (isSessionActive) stopSession();
+      else startSession();
     };
 
-    // Кнопка ручной передачи хода (прерывание ожидания)
     btnEndTurn.onclick = () => {
       if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({
           clientContent: {
-            turns: [{ role: "user", parts: [{ text: "[Ученик закончил говорить свою фразу и ждет твоего ответа]" }] }],
+            turns: [{ role: "user", parts: [{ text: "[Ученик завершил реплику]" }] }],
             turnComplete: true
           }
         }));
         statusText.innerText = "Камилла думает над ответом...";
+        if (speechRecognition) {
+            try { speechRecognition.stop(); } catch(e){}
+        }
       }
     };
 
@@ -319,7 +329,7 @@
         modalSettings.style.display = 'flex';
         return;
       }
-
+      chatBox.innerHTML = '';
       statusText.innerText = "Подключение к Камилле...";
       btnAction.disabled = true;
 
@@ -341,13 +351,15 @@
           statusText.innerText = "Камилла слушает вас...";
           orb.className = "orb listening";
 
-          // Стартовый скрытый запрос с учетом памяти (Новый или Повторный урок)
+          if (speechRecognition) {
+            try { speechRecognition.start(); } catch(e){}
+          }
+
           setTimeout(() => {
             if (socket.readyState === WebSocket.OPEN) {
               const startPrompt = hasCompletedFirstLesson 
                 ? "Bonjour Camille ! Я готов, давай продолжим наши уроки."
                 : "Bonjour ! Я готов к первому уроку, давай познакомимся.";
-
               socket.send(JSON.stringify({
                 clientContent: {
                   turns: [{ role: "user", parts: [{ text: startPrompt }] }],
@@ -366,10 +378,19 @@
             responseData = JSON.parse(event.data);
           }
 
-          // Воспроизведение голоса бота
           if (responseData.serverContent && responseData.serverContent.modelTurn) {
             const parts = responseData.serverContent.modelTurn.parts;
             for (const part of parts) {
+              if (part.text) {
+                if (!currentBotMsg) {
+                  currentBotMsg = document.createElement('div');
+                  currentBotMsg.className = 'msg-bot';
+                  currentBotMsg.innerHTML = '<b>Camille:</b> ';
+                  chatBox.appendChild(currentBotMsg);
+                }
+                currentBotMsg.innerHTML += part.text;
+                chatBox.scrollTop = chatBox.scrollHeight;
+              }
               if (part.inlineData && part.inlineData.mimeType.startsWith("audio/pcm")) {
                 playPcmChunk(part.inlineData.data);
                 orb.className = "orb speaking";
@@ -378,35 +399,29 @@
             }
           }
 
-          // Сервер подтверждает, что бот закончил говорить
           if (responseData.serverContent && responseData.serverContent.turnComplete) {
             orb.className = "orb listening";
             statusText.innerText = "Ваша очередь говорить...";
+            currentBotMsg = null; // Сброс для следующего ответа
           }
         };
 
         socket.onerror = (err) => {
-          console.error("Ошибка сокета:", err);
           statusText.innerText = "Ошибка соединения с сервером.";
           stopSession();
         };
 
         socket.onclose = (event) => {
-          if (event.reason) {
-            statusText.innerText = `Сессия завершена: ${event.reason}`;
-          }
+          statusText.innerText = `Сессия завершена`;
           stopSession();
         };
-
       } catch (err) {
-        console.error(err);
         statusText.innerText = "Не удалось подключиться.";
         stopSession();
       }
     }
 
     function sendInitialSetup() {
-      // Подмешиваем скрытый контекст памяти в системную инструкцию
       const memoryContext = hasCompletedFirstLesson 
         ? "СКРЫТЫЙ КОНТЕКСТ ДЛЯ ИИ: Это ПОВТОРНЫЙ урок. Ученик уже знаком с тобой. Не проводи этап знакомства, сразу тепло продолжай обучение."
         : "СКРЫТЫЙ КОНТЕКСТ ДЛЯ ИИ: Это ПЕРВЫЙ урок. Обязательно проведи этап знакомства и калибровки, как указано в правилах.";
@@ -417,11 +432,7 @@
           generationConfig: {
             responseModalities: ["AUDIO"],
             speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: {
-                  voiceName: "Aoede" // Установлен мягкий женский голос
-                }
-              }
+              voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } }
             }
           },
           systemInstruction: {
@@ -446,10 +457,7 @@
 
         socket.send(JSON.stringify({
           realtimeInput: {
-            mediaChunks: [{
-              mimeType: "audio/pcm;rate=16000",
-              data: base64Data
-            }]
+            mediaChunks: [{ mimeType: "audio/pcm;rate=16000", data: base64Data }]
           }
         }));
       };
@@ -467,12 +475,14 @@
       orb.className = "orb";
       statusText.innerText = "Урок завершен";
 
+      if (speechRecognition) {
+         try { speechRecognition.stop(); } catch(e){}
+      }
       if (scriptProcessor) scriptProcessor.disconnect();
       if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
       if (audioContext && audioContext.state !== 'closed') audioContext.close();
       if (socket && socket.readyState === WebSocket.OPEN) socket.close();
 
-      // Сохраняем в память, что первый урок пройден
       if (!hasCompletedFirstLesson) {
         localStorage.setItem('camille_learned', 'true');
         hasCompletedFirstLesson = true;
@@ -480,7 +490,6 @@
       }
     }
 
-    // Воспроизведение PCM аудио (24kHz для Gemini)
     let playbackContext = null;
     let nextPlayTime = 0;
 
@@ -511,7 +520,6 @@
       nextPlayTime += audioBuffer.duration;
     }
 
-    // Конвертация Float32 -> Int16
     function floatTo16BitPCM(input) {
       const output = new Int16Array(input.length);
       for (let i = 0; i < input.length; i++) {
@@ -521,7 +529,6 @@
       return output.buffer;
     }
 
-    // Конвертация ArrayBuffer -> Base64
     function arrayBufferToBase64(buffer) {
       let binary = '';
       const bytes = new Uint8Array(buffer);
