@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Tuteur Français Live</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 24px 16px; overflow: hidden; }
+    header { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 18px; font-weight: 600; color: #94a3b8; }
+    .btn-icon { background: #1e293b; border: none; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #94a3b8; font-size: 20px; }
+    
+    .visualizer-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; width: 100%; }
+    .orb { width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, #38bdf8 0%, #3b82f6 50%, #1e1b4b 100%); box-shadow: 0 0 40px rgba(56, 189, 248, 0.2); transition: all 0.3s ease; }
+    .orb.speaking { transform: scale(1.15); box-shadow: 0 0 60px rgba(56, 189, 248, 0.6); }
+    .orb.listening { transform: scale(1.05); box-shadow: 0 0 50px rgba(99, 102, 241, 0.5); }
+    .status-text { margin-top: 32px; font-size: 16px; color: #64748b; font-weight: 500; text-align: center; }
+
+    footer { width: 100%; padding-bottom: 20px; display: flex; justify-content: center; }
+    .btn-main { width: 100%; max-width: 320px; height: 56px; border-radius: 28px; border: none; font-size: 17px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-start { background: #2563eb; color: #ffffff; }
+    .btn-stop { background: #ef4444; color: #ffffff; }
+
+    /* Modal settings */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; z-index: 10; }
+    .modal.open { display: flex; }
+    .modal-card { background: #1e293b; width: 100%; max-width: 360px; border-radius: 16px; padding: 24px; }
+    .modal-card h2 { font-size: 18px; margin-bottom: 12px; }
+    .modal-card p { font-size: 13px; color: #94a3b8; margin-bottom: 16px; line-height: 1.4; }
+    .input-key { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 14px; margin-bottom: 16px; }
+    .btn-save { width: 100%; height: 44px; border-radius: 8px; border: none; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Tuteur Français (A1)</h1>
+    <button class="btn-icon" id="btnSettings">⚙️</button>
+  </header>
+
+  <div class="visualizer-container">
+    <div class="orb" id="orb"></div>
+    <div class="status-text" id="statusText">Appuyez sur Démarrer pour parler</div>
+  </div>
+
+  <footer>
+    <button class="btn-main btn-start" id="btnAction">Démarrer la leçon</button>
+  </footer>
+
+  <!-- Настройки API-ключа -->
+  <div class="modal" id="modalSettings">
+    <div class="modal-card">
+      <h2>Gemini API Key</h2>
+      <p>Votre clé est enregistrée uniquement dans votre navigateur et n'est partagée avec personne d'autre.</p>
+      <input type="password" id="apiKeyInput" class="input-key" placeholder="AIzaSy..." />
+      <button class="btn-save" id="btnSaveKey">Enregistrer</button>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    const SYSTEM_INSTRUCTION = `Tu es un tuteur personnel et bienveillant de français oral pour un débutant absolu (niveau A1).
+Directives absolues :
+1. Parle UNIQUEMENT en français avec une élocution très claire et lente.
+2. Fais des phrases très courtes (1 à 2 phrases par tour de parole maximum).
+3. Ne donne jamais de longs monologues.
+4. CORRECTION : Si l'utilisateur fait une faute de grammaire, de vocabulaire ou de structure :
+   - Reformule d'abord gentiment la bonne phrase (ex: "Ah, tu veux dire : *je suis allé*...").
+   - Donne une explication ultra-courte de 3 à 5 mots faciles.
+   - Demande-lui de répéter la phrase correctement avant de passer à la suite.
+5. Termine TOUJOURS par une seule question simple pour inviter l'utilisateur à parler.
+6. Commence immédiatement l'échange en disant exactement : "Bonjour ! Comment vas-tu aujourd'hui ?"`;
+
+    let socket = null;
+    let audioContext = null;
+    let micStream = null;
+    let scriptProcessor = null;
+    let nextPlayTime = 0;
+    let isSessionActive = false;
+
+    const orb = document.getElementById('orb');
+    const statusText = document.getElementById('statusText');
+    const btnAction = document.getElementById('btnAction');
+    const btnSettings = document.getElementById('btnSettings');
+    const modalSettings = document.getElementById('modalSettings');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const btnSaveKey = document.getElementById('btnSaveKey');
+
+    // Хранение ключа
+    let apiKey = localStorage.getItem('gemini_live_api_key') || '';
+    apiKeyInput.value = apiKey;
+
+    btnSettings.onclick = () => modalSettings.classList.add('open');
+    btnSaveKey.onclick = () => {
+      apiKey = apiKeyInput.value.trim();
+      localStorage.setItem('gemini_live_api_key', apiKey);
+      modalSettings.classList.remove('open');
+    };
+
+    btnAction.onclick = () => {
+      if (!isSessionActive) {
+        startSession();
+      } else {
+        stopSession();
+      }
+    };
+
+    async function startSession() {
+      if (!apiKey) {
+        modalSettings.classList.add('open');
+        return;
+      }
+
+      statusText.innerText = "Connexion...";
+      btnAction.disabled = true;
+
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+
+        // Подключение по защищенному WebSocket
+        const host = "generativelanguage.googleapis.com";
+        const path = "/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent";
+        const uri = `wss://${host}${path}?key=${apiKey}`;
+
+        socket = new WebSocket(uri);
+
+        socket.onopen = () => {
+          sendInitialSetup();
+          initMicrophone();
+          isSessionActive = true;
+          btnAction.disabled = false;
+          btnAction.innerText = "Arrêter la leçon";
+          btnAction.className = "btn-main btn-stop";
+          statusText.innerText = "Écoute active...";
+          orb.className = "orb listening";
+        };
+
+        socket.onmessage = async (event) => {
+          handleIncomingMessage(event.data);
+        };
+
+        socket.onerror = (err) => {
+          console.error("Socket error", err);
+          stopSession();
+          statusText.innerText = "Erreur de connexion (vérifiez la clé API)";
+        };
+
+        socket.onclose = () => {
+          stopSession();
+        };
+
+      } catch (e) {
+        console.error(e);
+        stopSession();
+        statusText.innerText = "Erreur audio/micro";
+      }
+    }
+
+    function sendInitialSetup() {
+      const setupMessage = {
+        setup: {
+          model: "models/gemini-2.0-flash-exp",
+          generationConfig: {
+            responseModalities: ["AUDIO"],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: {
+                  voiceName: "Kore" // Естественный женский голос (или "Puck" - мужской)
+                }
+              }
+            }
+          },
+          systemInstruction: {
+            parts: [{ text: SYSTEM_INSTRUCTION }]
+          }
+        }
+      };
+      socket.send(JSON.stringify(setupMessage));
+    }
+
+    async function initMicrophone() {
+      micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          sampleRate: 16000,
+          echoCancellation: true,
+          noiseSuppression: true
+        }
+      });
+
+      const micContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      const source = micContext.createMediaStreamSource(micStream);
+      scriptProcessor = micContext.createScriptProcessor(4096, 1, 1);
+
+      scriptProcessor.onaudioprocess = (e) => {
+        if (!isSessionActive || socket.readyState !== WebSocket.OPEN) return;
+        const inputData = e.inputBuffer.getChannelData(0);
+        
+        // Преобразование Float32 в 16-битный PCM
+        const pcm16 = new Int16Array(inputData.length);
+        for (let i = 0; i < inputData.length; i++) {
+          const s = Math.max(-1, Math.min(1, inputData[i]));
+          pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+        }
+
+        const base64Data = arrayBufferToBase64(pcm16.buffer);
+        socket.send(JSON.stringify({
+          realtimeInput: {
+            mediaChunks: [{
+              mimeType: "audio/pcm;rate=16000",
+              data: base64Data
+            }]
+          }
+        }));
+      };
+
+      source.connect(scriptProcessor);
+      scriptProcessor.connect(micContext.destination);
+    }
+
+    async function handleIncomingMessage(rawData) {
+      try {
+        let msg = rawData;
+        if (msg instanceof Blob) {
+          msg = await msg.text();
+        }
+        const data = JSON.parse(msg);
+
+        // Получение аудиопотока от Gemini
+        const parts = data.serverContent?.modelTurn?.parts;
+        if (parts) {
+          for (const part of parts) {
+            if (part.inlineData && part.inlineData.data) {
+              playPcmAudioChunk(part.inlineData.data);
+            }
+          }
+        }
+
+        // Если пользователь начинает говорить, прерываем предыдущую речь репетитора
+        if (data.serverContent?.interrupted) {
+          nextPlayTime = audioContext.currentTime;
+        }
+      } catch (err) {
+        console.error("Erreur parsing JSON:", err);
+      }
+    }
+
+    function playPcmAudioChunk(base64Data) {
+      orb.className = "orb speaking";
+      statusText.innerText = "Le tuteur parle...";
+
+      const binaryString = atob(base64Data);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const pcm16 = new Int16Array(bytes.buffer);
+      const float32 = new Float32Array(pcm16.length);
+      for (let i = 0; i < pcm16.length; i++) {
+        float32[i] = pcm16[i] / 32768.0;
+      }
+
+      const audioBuffer = audioContext.createBuffer(1, float32.length, 24000);
+      audioBuffer.copyToChannel(float32, 0);
+
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+
+      const now = audioContext.currentTime;
+      const startTime = Math.max(now, nextPlayTime);
+      source.start(startTime);
+      nextPlayTime = startTime + audioBuffer.duration;
+
+      source.onended = () => {
+        if (audioContext.currentTime >= nextPlayTime - 0.1) {
+          orb.className = "orb listening";
+          statusText.innerText = "Écoute active...";
+        }
+      };
+    }
+
+    function stopSession() {
+      isSessionActive = false;
+      if (socket) socket.close();
+      if (micStream) micStream.getTracks().forEach(t => t.stop());
+      if (scriptProcessor) scriptProcessor.disconnect();
+
+      btnAction.disabled = false;
+      btnAction.innerText = "Démarrer la leçon";
+      btnAction.className = "btn-main btn-start";
+      orb.className = "orb";
+      statusText.innerText = "Session terminée";
+    }
+
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    }
+  </script>
+</body>
+</html>
