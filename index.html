@@ -14,7 +14,6 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     body {
-      /* Красивый фон Парижа с мягким градиентным затемнением */
       background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.95)), 
                   url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80') no-repeat center center;
       background-size: cover;
@@ -56,6 +55,10 @@
     }
     .orb-container {
       margin-bottom: 30px;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .orb {
       width: 140px;
@@ -63,21 +66,12 @@
       border-radius: 50%;
       background: radial-gradient(circle, #38bdf8 0%, #2563eb 100%);
       box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-    .orb.listening {
-      transform: scale(1.08);
-      box-shadow: 0 0 50px rgba(56, 189, 248, 0.8);
-      animation: pulse 2s infinite alternate;
+      transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
     }
     .orb.speaking {
-      transform: scale(1.15);
-      box-shadow: 0 0 60px rgba(168, 85, 247, 0.9);
+      transform: scale(1.15) !important;
+      box-shadow: 0 0 60px rgba(168, 85, 247, 0.9) !important;
       background: radial-gradient(circle, #c084fc 0%, #9333ea 100%);
-    }
-    @keyframes pulse {
-      0% { transform: scale(1.02); }
-      100% { transform: scale(1.12); }
     }
     .status-text {
       font-size: 1.1rem;
@@ -86,7 +80,6 @@
       margin-bottom: 16px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
-    
     footer {
       padding: 24px;
       display: flex;
@@ -175,20 +168,21 @@
       navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW не зарегистрирован:', err));
     }
 
-    // Полностью переписанный промпт - без жестких программ, фокус на желаниях ученика
-    const SYSTEM_INSTRUCTION = `Ты — Камилла, живая и очень эмпатичная преподавательница французского языка. Твой голос — мягкий женский.
+    const SYSTEM_INSTRUCTION = `Ты — Камилла, живая преподавательница французского языка. 
 
-АБСОЛЮТНОЕ ПРАВИЛО И ГЛАВНЫЙ ПРИОРИТЕТ:
-ТЫ ПОЛНОСТЬЮ ПОДЧИНЯЕШЬСЯ УЧЕНИКУ. У тебя НЕТ жесткой обязательной программы. Всё, что описано ниже — это лишь мягкие рекомендации. Если ученик предлагает свою тему, просит разыграть любую жизненную ситуацию (например, «научи меня записываться к врачу по телефону», «заказ в ресторане») или задает любой вопрос — НЕМЕДЛЕННО бросай свои заготовленные темы. Мгновенно вживайся в нужную роль и веди диалог ИМЕННО по сценарию ученика. Если он говорит о чем-то своем, поддерживай ЕГО тему, не возвращаясь к своему списку.
+ПРАВИЛО ТИШИНЫ (САМОЕ ГЛАВНОЕ):
+Если ты не расслышала ученика или к тебе пришла абсолютная тишина — КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО выдумывать диалог, предлагать хобби или продолжать урок. Ты обязана сказать по-русски: "Прости, я ничего не услышала. Кажется, у тебя не работает микрофон."
 
-ПРАВИЛО ПЕРЕВОДА (КРИТИЧЕСКИ ВАЖНО):
-Ты свободно владеешь французским, русским и украинским. Если ученик говорит «переведи», «я не понял», или просит объяснить смысл — НЕМЕДЛЕННО переходи на его родной язык и дай подробное пояснение. Запрещено игнорировать просьбу о переводе. Сначала объясни на языке ученика, а только потом мягко возвращайся к французскому.
+АБСОЛЮТНОЕ ПРАВИЛО ПОДЧИНЕНИЯ УЧЕНИКУ:
+Если ученик предлагает свою тему, просит разыграть любую жизненную ситуацию (например, «научи меня записываться к врачу») или задает любой вопрос — НЕМЕДЛЕННО бросай свои заготовленные темы. Вживайся в нужную роль и веди диалог ИМЕННО по его сценарию. 
 
-КАК ВЕСТИ УРОК (РЕКОМЕНДАЦИИ, ЕСЛИ УЧЕНИК НЕ ПРЕДЛОЖИЛ СВОЁ):
-- Знакомство (если ученик новый): тепло поздоровайся, спроси имя на его языке, уточни комфортный формат (сразу с переводом или только по запросу).
-- Продолжение: поприветствуй тепло, спроси, о чем поговорим сегодня.
-- Ведение диалога: уровень французского A1. Говори короткими фразами. Заканчивай свою реплику простым вопросом, чтобы собеседнику было легко ответить.
-- Исправление ошибок: не перебивай. Мягко объясни ошибку на языке ученика, произнеси правильно по-французски и попроси повторить.`;
+ПРАВИЛО ПЕРЕВОДА:
+Если ученик говорит «переведи», «я не понял», или просит объяснить смысл — НЕМЕДЛЕННО переходи на его родной язык (русский или украинский) и дай подробное пояснение. Запрещено игнорировать просьбу о переводе.
+
+КАК ВЕСТИ УРОК (ТОЛЬКО ЕСЛИ УЧЕНИК ПРОСИТ ТВОЕЙ ИНИЦИАТИВЫ):
+- Знакомство: тепло поздоровайся, спроси имя на его языке.
+- Базовый уровень — французский A1. Говори короткими фразами, заканчивай их вопросом.
+- Не перебивай. Мягко объясняй ошибки на языке ученика.`;
 
     let apiKey = localStorage.getItem('gemini_api_key') || '';
     let hasCompletedFirstLesson = localStorage.getItem('camille_learned') === 'true';
@@ -211,10 +205,7 @@
     }
     updateBadge();
 
-    btnSettings.onclick = () => {
-      inputApiKey.value = apiKey;
-      modalSettings.style.display = 'flex';
-    };
+    btnSettings.onclick = () => { inputApiKey.value = apiKey; modalSettings.style.display = 'flex'; };
     btnCloseModal.onclick = () => { modalSettings.style.display = 'none'; };
     btnSaveKey.onclick = () => {
       apiKey = inputApiKey.value.trim();
@@ -235,36 +226,35 @@
     let mediaStream = null;
     let scriptProcessor = null;
     let isSessionActive = false;
-    
-    // Массив для хранения активных кусков аудио (чтобы можно было резко оборвать речь)
     let activeAudioSources = [];
+    let isBotSpeaking = false;
 
     btnAction.onclick = () => {
       if (isSessionActive) stopSession();
       else startSession();
     };
 
-    // Принудительная передача хода
     btnEndTurn.onclick = () => {
       if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({
           clientContent: {
-            turns: [{ role: "user", parts: [{ text: "[Ученик завершил мысль. Твоя очередь.]" }] }],
+            turns: [{ role: "user", parts: [{ text: "[Ученик закончил говорить. Отвечай.]" }] }],
             turnComplete: true
           }
         }));
-        stopBotSpeech(); // Резко обрываем её речь, если она еще говорит
+        stopBotSpeech();
         statusText.innerText = "Камилла думает над ответом...";
       }
     };
 
-    // ФУНКЦИЯ ДЛЯ МГНОВЕННОГО ПРЕРЫВАНИЯ РЕЧИ ИИ
     function stopBotSpeech() {
       activeAudioSources.forEach(source => {
         try { source.stop(); } catch(e) {}
       });
       activeAudioSources = [];
-      orb.className = "orb listening";
+      isBotSpeaking = false;
+      orb.className = "orb";
+      orb.style.transform = "scale(1)";
       if (isSessionActive) statusText.innerText = "Камилла слушает вас...";
     }
 
@@ -276,7 +266,8 @@
       
       statusText.innerText = "Подключение к Камилле...";
       btnAction.disabled = true;
-      activeAudioSources = []; // очищаем буфер
+      activeAudioSources = [];
+      isBotSpeaking = false;
 
       const host = "generativelanguage.googleapis.com";
       const path = "/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent";
@@ -294,13 +285,12 @@
           btnAction.className = "btn-main btn-stop";
           btnEndTurn.style.display = "block";
           statusText.innerText = "Камилла слушает вас...";
-          orb.className = "orb listening";
 
           setTimeout(() => {
             if (socket.readyState === WebSocket.OPEN) {
               const startPrompt = hasCompletedFirstLesson 
-                ? "Bonjour Camille ! Я готов, давай продолжим наши уроки."
-                : "Bonjour ! Я готов к первому уроку, давай познакомимся.";
+                ? "Bonjour Camille ! Я готов, давай продолжим."
+                : "Bonjour ! Я готов к первому уроку.";
               socket.send(JSON.stringify({
                 clientContent: {
                   turns: [{ role: "user", parts: [{ text: startPrompt }] }],
@@ -319,32 +309,31 @@
             responseData = JSON.parse(event.data);
           }
 
-          // Если сервер сам понял, что его перебили голосом
           if (responseData.serverContent && responseData.serverContent.interrupted) {
             stopBotSpeech();
           }
 
-          // Воспроизведение речи Камиллы
           if (responseData.serverContent && responseData.serverContent.modelTurn) {
             const parts = responseData.serverContent.modelTurn.parts;
             for (const part of parts) {
               if (part.inlineData && part.inlineData.mimeType.startsWith("audio/pcm")) {
                 playPcmChunk(part.inlineData.data);
+                isBotSpeaking = true;
                 orb.className = "orb speaking";
                 statusText.innerText = "Камилла говорит...";
               }
             }
           }
 
-          // Окончание реплики ИИ
           if (responseData.serverContent && responseData.serverContent.turnComplete) {
-            orb.className = "orb listening";
+            isBotSpeaking = false;
+            orb.className = "orb";
             statusText.innerText = "Ваша очередь говорить...";
           }
         };
 
         socket.onerror = (err) => {
-          statusText.innerText = "Ошибка соединения с сервером.";
+          statusText.innerText = "Ошибка соединения.";
           stopSession();
         };
 
@@ -360,8 +349,8 @@
 
     function sendInitialSetup() {
       const memoryContext = hasCompletedFirstLesson 
-        ? "КОНТЕКСТ ДЛЯ ИИ: Это ПОВТОРНЫЙ урок. Не знакомься заново, просто тепло поздоровайся."
-        : "КОНТЕКСТ ДЛЯ ИИ: Это ПЕРВЫЙ урок. Познакомься и уточни пожелания.";
+        ? "КОНТЕКСТ ДЛЯ ИИ: ПОВТОРНЫЙ урок. Не знакомься."
+        : "КОНТЕКСТ ДЛЯ ИИ: ПЕРВЫЙ урок. Познакомься.";
 
       const setupMessage = {
         setup: {
@@ -391,13 +380,26 @@
         
         const inputData = e.inputBuffer.getChannelData(0);
         
-        // Датчик голоса (VAD). Если вы начинаете говорить громко — ИИ немедленно замолкает
         let sum = 0;
         for (let i = 0; i < inputData.length; i++) { sum += inputData[i] * inputData[i]; }
         let rms = Math.sqrt(sum / inputData.length);
         
+        // Визуализация голоса пользователя (Датчик микрофона)
+        if (!isBotSpeaking) {
+          if (rms > 0.015) {
+            // Если звук есть, сфера пульсирует в такт голосу
+            const scale = 1 + (rms * 2);
+            orb.style.transform = `scale(${scale})`;
+            orb.style.boxShadow = `0 0 50px rgba(56, 189, 248, 0.8)`;
+          } else {
+            orb.style.transform = "scale(1)";
+            orb.style.boxShadow = `0 0 30px rgba(56, 189, 248, 0.4)`;
+          }
+        }
+
+        // Прерывание бота при громком звуке от пользователя
         if (rms > 0.04 && activeAudioSources.length > 0) {
-          stopBotSpeech(); // Локальное обрывание звука ИИ
+          stopBotSpeech();
         }
 
         const pcm16 = floatTo16BitPCM(inputData);
@@ -422,6 +424,7 @@
       btnAction.className = "btn-main btn-start";
       btnEndTurn.style.display = "none";
       orb.className = "orb";
+      orb.style.transform = "scale(1)";
       statusText.innerText = "Урок завершен";
 
       if (scriptProcessor) scriptProcessor.disconnect();
@@ -444,7 +447,6 @@
         playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
       }
       
-      // Сброс таймера при новом ответе
       if (activeAudioSources.length === 0 && playbackContext.currentTime > nextPlayTime) {
         nextPlayTime = playbackContext.currentTime;
       }
@@ -470,10 +472,12 @@
       source.start(nextPlayTime);
       nextPlayTime += audioBuffer.duration;
       
-      // Добавляем в буфер для возможности прерывания
       activeAudioSources.push(source);
       source.onended = () => {
         activeAudioSources = activeAudioSources.filter(s => s !== source);
+        if (activeAudioSources.length === 0) {
+          isBotSpeaking = false;
+        }
       };
     }
 
