@@ -129,7 +129,7 @@ Directives absolues :
 
         // Подключение по защищенному WebSocket
         const host = "generativelanguage.googleapis.com";
-        const path = "/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent";
+        const path = "/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent";
         const uri = `wss://${host}${path}?key=${apiKey}`;
 
         socket = new WebSocket(uri);
