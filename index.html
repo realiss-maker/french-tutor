@@ -63,6 +63,7 @@
       <select id="selectLanguage">
         <option value="french">Французский</option>
         <option value="english">Английский</option>
+        <option value="spanish">Испанский</option>
       </select>
 
       <label style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Голос преподавателя:</label>
@@ -82,7 +83,6 @@
       navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW не зарегистрирован:', err));
     }
 
-    // Миграция старых сохранений
     if (localStorage.getItem('camille_learned') === 'true' && !localStorage.getItem('learned_french')) {
       localStorage.setItem('learned_french', 'true');
     }
@@ -108,19 +108,21 @@
     const selectLanguage = document.getElementById('selectLanguage');
 
     function getTeacherName() {
-      if (targetLanguage === 'french') {
-        return teacherGender === 'male' ? 'Лоран (Laurent)' : 'Камилла (Camille)';
-      } else {
-        return teacherGender === 'male' ? 'Артур (Arthur)' : 'Эмма (Emma)';
-      }
+      if (targetLanguage === 'french') return teacherGender === 'male' ? 'Лоран (Laurent)' : 'Камилла (Camille)';
+      if (targetLanguage === 'english') return teacherGender === 'male' ? 'Артур (Arthur)' : 'Эмма (Emma)';
+      if (targetLanguage === 'spanish') return teacherGender === 'male' ? 'Диего (Diego)' : 'Кармен (Carmen)';
     }
 
     function updateUI() {
       hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';
       profileBadge.innerText = hasCompletedFirstLesson ? "Ученик (Профиль сохранен)" : "Новый ученик (Первый урок)";
       
-      const shortName = targetLanguage === 'french' ? (teacherGender === 'male' ? 'Laurent' : 'Camille') : (teacherGender === 'male' ? 'Arthur' : 'Emma');
-      const langLabel = targetLanguage === 'french' ? 'Français' : 'English';
+      let shortName = '';
+      let langLabel = '';
+      if (targetLanguage === 'french') { shortName = teacherGender === 'male' ? 'Laurent' : 'Camille'; langLabel = 'Français'; }
+      if (targetLanguage === 'english') { shortName = teacherGender === 'male' ? 'Arthur' : 'Emma'; langLabel = 'English'; }
+      if (targetLanguage === 'spanish') { shortName = teacherGender === 'male' ? 'Diego' : 'Carmen'; langLabel = 'Español'; }
+      
       headerTitle.innerText = `${shortName} • ${langLabel}`;
     }
     updateUI();
@@ -155,12 +157,15 @@
       alert('Профиль сброшен. Следующий урок начнется со знакомства.');
     };
 
-    JavaScript
     function getSystemInstruction() {
       const tName = getTeacherName();
       const tRole = teacherGender === 'male' ? 'живой, эмпатичный преподаватель' : 'живая, эмпатичная преподавательница';
-      const langName = targetLanguage === 'french' ? 'французского' : 'английского';
-      const langAdverb = targetLanguage === 'french' ? 'по-французски' : 'по-английски';
+      
+      let langName = '';
+      let langAdverb = '';
+      if (targetLanguage === 'french') { langName = 'французского'; langAdverb = 'по-французски'; }
+      if (targetLanguage === 'english') { langName = 'английского'; langAdverb = 'по-английски'; }
+      if (targetLanguage === 'spanish') { langName = 'испанского'; langAdverb = 'по-испански'; }
       
       return `Ты — ${tName}, ${tRole} ${langName} языка. Твой голос — ${teacherGender === 'male' ? 'приятный мужской' : 'мягкий женский'}.
 
@@ -196,6 +201,7 @@
    - Если хочет продолжить — спроси, какую новую тему он хотел бы обсудить сейчас.
 4. ТЕСТЫ: В самом конце урока предлагай устный мини-тест (1-2 минуты).`;
     }
+
     let socket = null, audioContext = null, mediaStream = null, scriptProcessor = null;
     let isSessionActive = false, activeAudioSources = [], isBotSpeaking = false;
 
@@ -224,7 +230,11 @@
           btnEndTurn.style.display = "block"; statusText.innerText = "Слушаю вас...";
           setTimeout(() => {
             if (socket.readyState === WebSocket.OPEN) {
-              const helloWord = targetLanguage === 'french' ? 'Bonjour' : 'Hello';
+              let helloWord = '';
+              if (targetLanguage === 'french') helloWord = 'Bonjour';
+              if (targetLanguage === 'english') helloWord = 'Hello';
+              if (targetLanguage === 'spanish') helloWord = '¡Hola';
+              
               const startPrompt = hasCompletedFirstLesson ? `${helloWord} ! Я готов, давай продолжим.` : `${helloWord} ! Я готов к первому уроку.`;
               socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: startPrompt }] }], turnComplete: true } }));
             }
