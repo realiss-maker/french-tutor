@@ -27,7 +27,7 @@
     
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; padding: 20px; z-index: 50; }
     .modal-content { background: #1e293b; padding: 24px; border-radius: 16px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    .modal-content input, .modal-content select, .modal-content textarea { padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 0.95rem; width: 100%; }
+    .modal-content input, .modal-content select { padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 0.95rem; width: 100%; }
     .modal-content label { font-size: 0.85rem; color: #94a3b8; margin-bottom: -6px; }
     .modal-content button { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
     .btn-save { background: #2563eb; color: white; margin-top: 6px; }
@@ -80,12 +80,6 @@
         </div>
       </div>
 
-      <label>Обо мне (Общая память для всех языков):</label>
-      <textarea id="inputGlobalMemory" rows="3" placeholder="Имя, профессия, семья, увлечения..."></textarea>
-
-      <label>Прогресс по выбранному языку:</label>
-      <textarea id="inputLangMemory" rows="3" placeholder="Пройденные темы, выученные слова, частые ошибки..."></textarea>
-
       <button class="btn-save" id="btnSaveKey">Сохранить настройки</button>
       <button class="btn-reset-profile" id="btnResetMemory">Очистить память (Забыть всё)</button>
       <button class="btn-close" id="btnCloseModal">Закрыть</button>
@@ -101,7 +95,6 @@
     let teacherGender = localStorage.getItem('teacher_gender') || 'female';
     let targetLanguage = localStorage.getItem('target_language') || 'french';
     
-    // Исправлены символы "||"
     let globalMemory = localStorage.getItem('global_memory') || '';
     let langMemory = localStorage.getItem(`memory_${targetLanguage}`) || '';     
     let hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';
@@ -120,8 +113,6 @@
     const inputApiKey = document.getElementById('inputApiKey');
     const selectTeacher = document.getElementById('selectTeacher');
     const selectLanguage = document.getElementById('selectLanguage');
-    const inputGlobalMemory = document.getElementById('inputGlobalMemory');
-    const inputLangMemory = document.getElementById('inputLangMemory');
 
     function getTeacherName() {
       if (targetLanguage === 'french') return teacherGender === 'male' ? 'Лоран (Laurent)' : 'Камилла (Camille)';
@@ -149,14 +140,7 @@
       inputApiKey.value = apiKey; 
       selectTeacher.value = teacherGender; 
       selectLanguage.value = targetLanguage;
-      inputGlobalMemory.value = globalMemory;
-      inputLangMemory.value = langMemory;
       modalSettings.style.display = 'flex'; 
-    };
-
-    selectLanguage.onchange = () => {
-      const selectedLang = selectLanguage.value;
-      inputLangMemory.value = localStorage.getItem(`memory_${selectedLang}`) || '';
     };
 
     btnCloseModal.onclick = () => { modalSettings.style.display = 'none'; };
@@ -165,21 +149,14 @@
       apiKey = inputApiKey.value.trim();
       teacherGender = selectTeacher.value;
       targetLanguage = selectLanguage.value;
-      globalMemory = inputGlobalMemory.value.trim();
-      langMemory = inputLangMemory.value.trim();
       
       localStorage.setItem('gemini_api_key', apiKey);
       localStorage.setItem('teacher_gender', teacherGender);
       localStorage.setItem('target_language', targetLanguage);
-      localStorage.setItem('global_memory', globalMemory);
-      localStorage.setItem(`memory_${targetLanguage}`, langMemory);
-      if (globalMemory || langMemory) {
-        localStorage.setItem(`learned_${targetLanguage}`, 'true');
-      }
       
       updateUI(); 
       modalSettings.style.display = 'none'; 
-      alert('Настройки и память успешно сохранены!');
+      alert('Настройки успешно сохранены!');
     };
     
     btnResetMemory.onclick = () => {
@@ -189,8 +166,6 @@
       hasCompletedFirstLesson = false; 
       globalMemory = ''; 
       langMemory = '';
-      inputGlobalMemory.value = '';
-      inputLangMemory.value = '';
       updateUI(); 
       modalSettings.style.display = 'none';
       alert('Память ИИ полностью очищена.');
@@ -215,7 +190,7 @@
 Если ученик говорит с тобой на УКРАИНСКОМ языке, давай пояснения СТРОГО НА УКРАИНСКОМ. Если на русском — на русском.
 
 ПРАВИЛО ИЗУЧАЕМОГО ЯЗЫКА (КРИТИЧЕСКИ ВАЖНО):
-Первая фраза в твоем ответе ВСЕГДА ДОЛЖНА БЫТЬ НА ИЗУЧАЕМОМ ЯЗЫКЕ (${langAdverb}). Даже если ты просто спрашиваешь "Как дела?" или шутишь. Сначала скажи это ${langAdverb}, а только потом дай перевод на язык ученика.
+Первая фраза в твоем ответе ВСЕГДА ДОЛЖНА БЫТЬ НА ИЗУЧАЕМОМ ЯЗЫКЕ (${langAdverb}). Сначала скажи это ${langAdverb}, а только потом дай перевод на язык ученика.
 
 АДАПТИВНОСТЬ:
 Ученик устно управляет уроком. Просит меньше переводить — прекрати автоперевод. Просит разыграть сценку — играй роль.
@@ -226,32 +201,32 @@
 2. Объясни, в чем ошибка, и четко произнеси правильный вариант ${langAdverb}.
 3. Попроси ученика повторить именно это слово/фразу.
 4. Если ученик повторяет с ошибкой (2-я попытка и далее), снова объясни, как нужно правильно произносить, и попроси повторить еще раз.
-5. Если после 5 попыток не получается произнести идеально, мягко скажи, что результат пока не идеален, но чтобы не зацикливаться, вы повторите это на тестах в конце урока или в следующий раз. При этом предложи выбор: идти дальше или продолжать тренировать это слово до идеала, если ученик не против.
+5. Если после 5 попыток не получается произнести идеально, мягко скажи, что результат пока не идеален, и вы повторите это в следующий раз.
 
-ЛИЧНЫЕ ГРАНИЦЫ: Если ученик хамит или переводит тему на эротическо-интимные темы — настойчиво напомни ему о целях урока и попроси не отвлекаться от темы урока, если в рамках того же урока такое поведение повториться еще 2-3 раза - НЕМЕДЛЕННО возмутись и откажись обсуждать, на 3-4 попытку (в рамках текущего урока) такого поведения - предложи закончить сегодняшний урок.
+ЛИЧНЫЕ ГРАНИЦЫ: Если ученик хамит или переводит тему на эротическо-интимные темы — настойчиво напомни ему о целях урока. При повторении 2-3 раза - откажись обсуждать.
 
 КАК ВЕСТИ УРОК (ЕСТЕСТВЕННО И ПЛАВНО):
-Не пытайся впихнуть весь план в одно сообщение. Двигайся постепенно, дожидаясь ответов ученика.
 1. ПЕРВЫЙ УРОК: Тепло поздоровайся ${langAdverb}. Уточни имя и уровень.
 2. ПОВТОРНЫЕ УРОКИ:
-   - Приветствие: Радостно поздоровайся по имени (из Памяти). Спроси, как настроение. Если знаешь что-то из жизни ученика (из Памяти), можешь вплести ОДИН короткий дружеский вопрос.
-   - НИКАКИХ ДОПРОСОВ: Новые личные вопросы задавай крайне редко, очень размыто, вплетая их в естественный диалог. Не закидывай вопросами.
-   - План: Выслушав первый ответ ученика, предложи 3 варианта темы.
-   - Проверка: Мягко задай 1-2 вопроса по ПРОШЛОЙ теме (из Памяти).
-   - Переход: Хвали за успехи и переходи к новой теме.
-3. ТАЙМИНГ: Ориентир — 15 минут (15-20 реплик). Затем мягко предложи завершить или продолжить.`;
+   - Приветствие: Радостно поздоровайся по имени (из Памяти). 
+   - ПРОВЕРКА ПРОШЛОГО УРОКА: СРАЗУ ПОСЛЕ ПРИВЕТСТВИЯ ОБЯЗАТЕЛЬНО задай 2 коротких тестовых вопроса по ПРОШЛОЙ теме (из блока ПРОГРЕСС). Дождись ответа.
+   - План: Выслушав ответ, предложи 2 варианта новой темы.
+3. ЗАВЕРШЕНИЕ УРОКА (ТЕСТ): Когда ученик просит завершить урок или время подходит к концу, ПЕРЕД ТЕМ как попрощаться, ОБЯЗАТЕЛЬНО задай 2 контрольных вопроса по материалу, который вы обсудили СЕГОДНЯ. Только после ответа ученика прощайся.`;
     }
-    
+
     let socket = null, audioContext = null, mediaStream = null, scriptProcessor = null;
     let isSessionActive = false, activeAudioSources = [], isBotSpeaking = false;
     let isExtractingMemory = false, isUserInterrupting = false;
+    let isClosingNormally = false;
     let extractionTimeout = null;
+    let silenceInterval = null;
+    let lastActivityTime = Date.now();
 
     btnAction.onclick = () => { isSessionActive ? stopSession() : startSession(); };
     
     btnEndTurn.onclick = () => {
       if (socket && socket.readyState === WebSocket.OPEN && !isExtractingMemory) {
-        socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[Ученик закончил говорить.]" }] }], turnComplete: true } }));
+        socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[Ученик закончил говорить. Жду твой ответ.]" }] }], turnComplete: true } }));
         stopBotSpeech(); 
         statusText.innerText = "Анализ ответа...";
       }
@@ -263,7 +238,10 @@
       isBotSpeaking = false; 
       orb.className = "orb"; 
       orb.style.transform = "scale(1)";
-      if (isSessionActive && !isExtractingMemory) statusText.innerText = "Слушаю вас...";
+      if (isSessionActive && !isExtractingMemory) {
+          statusText.innerText = "Слушаю вас...";
+          lastActivityTime = Date.now();
+      }
     }
 
     async function startSession() {
@@ -274,6 +252,8 @@
       isBotSpeaking = false; 
       isExtractingMemory = false; 
       isUserInterrupting = false;
+      isClosingNormally = false;
+      lastActivityTime = Date.now();
       
       try {
         socket = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${apiKey}`);
@@ -288,6 +268,20 @@
           btnEndTurn.style.display = "block"; 
           statusText.innerText = "Слушаю вас...";
           
+          // Запуск таймера контроля тишины
+          if(silenceInterval) clearInterval(silenceInterval);
+          silenceInterval = setInterval(() => {
+            if (isSessionActive && !isBotSpeaking && !isExtractingMemory && !isUserInterrupting) {
+              if (Date.now() - lastActivityTime > 12000) { // 12 секунд абсолютной тишины
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                  socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[СИСТЕМНОЕ СООБЩЕНИЕ: Ученик долго молчит. Очень коротко и мягко спроси, здесь ли он и продолжаем ли мы урок.]" }] }], turnComplete: true } }));
+                  lastActivityTime = Date.now(); // Сброс таймера, чтобы не спамить
+                  statusText.innerText = "Репетитор проверяет связь...";
+                }
+              }
+            }
+          }, 1000);
+
           setTimeout(() => {
             if (socket.readyState === WebSocket.OPEN) {
               let helloWord = targetLanguage === 'french' ? 'Bonjour' : (targetLanguage === 'english' ? 'Hello' : '¡Hola');
@@ -355,11 +349,20 @@
             isUserInterrupting = false; 
             orb.className = "orb"; 
             statusText.innerText = "Ваша очередь говорить..."; 
+            lastActivityTime = Date.now(); // Обнуляем таймер тишины после ответа репетитора
           }
         };
 
         socket.onerror = () => { statusText.innerText = "Ошибка соединения. Проверьте ключ API."; finalizeStop(); };
-        socket.onclose = () => { if(isSessionActive && !isExtractingMemory) finalizeStop(); };
+        
+        socket.onclose = () => { 
+          if(isSessionActive && !isExtractingMemory) {
+            if (!isClosingNormally) {
+              statusText.innerText = "Сеанс прерван (ошибка сети или таймаут).";
+            }
+            finalizeStop(); 
+          }
+        };
       } catch (err) { statusText.innerText = "Не удалось подключиться."; finalizeStop(); }
     }
 
@@ -420,7 +423,11 @@
         let rms = Math.sqrt(sum / inputData.length);
         
         if (!isBotSpeaking) {
-          if (rms > 0.015) { orb.style.transform = `scale(${1 + (rms * 2)})`; orb.style.boxShadow = `0 0 50px rgba(56, 189, 248, 0.8)`; }
+          if (rms > 0.015) { 
+            lastActivityTime = Date.now(); // Сброс таймера тишины при любом шуме
+            orb.style.transform = `scale(${1 + (rms * 2)})`; 
+            orb.style.boxShadow = `0 0 50px rgba(56, 189, 248, 0.8)`; 
+          }
           else { orb.style.transform = "scale(1)"; orb.style.boxShadow = `0 0 30px rgba(56, 189, 248, 0.4)`; }
         }
         
@@ -445,9 +452,10 @@
     function stopSession() {
       if (!isSessionActive) return;
       isSessionActive = false;
+      isClosingNormally = true; 
       stopBotSpeech(); 
       btnAction.disabled = true; 
-      btnEndTurn.style.display = "none";
+      btnEndTurn.style.display = "none"; // Прячем кнопку "Жду ответ" при штатном закрытии
       orb.className = "orb"; 
       orb.style.transform = "scale(1)";
       statusText.innerText = "Сохранение прогресса (закрываю урок)...";
@@ -470,8 +478,17 @@
 
     function finalizeStop() {
       if (extractionTimeout) clearTimeout(extractionTimeout);
-      btnAction.disabled = false; btnAction.innerText = "Начать урок"; btnAction.className = "btn-main btn-start";
-      statusText.innerText = "Урок и прогресс сохранены.";
+      if (silenceInterval) clearInterval(silenceInterval); // Останавливаем таймер тишины
+      
+      btnAction.disabled = false; 
+      btnAction.innerText = "Начать урок"; 
+      btnAction.className = "btn-main btn-start";
+      btnEndTurn.style.display = "none"; // Гарантированно прячем кнопку "Жду ответ" при любом закрытии
+      
+      if (statusText.innerText !== "Сеанс прерван (ошибка сети или таймаут).") {
+          statusText.innerText = "Урок и прогресс сохранены.";
+      }
+      
       if (scriptProcessor) scriptProcessor.disconnect(); if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
       if (audioContext && audioContext.state !== 'closed') audioContext.close(); 
       if (socket && socket.readyState === WebSocket.OPEN) socket.close();
