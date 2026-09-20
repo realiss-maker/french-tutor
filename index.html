@@ -8,7 +8,6 @@
   <meta name="theme-color" content="#0f172a">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    /* Использован dvh для корректного отображения на мобильных браузерах */
     body { background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80') no-repeat center center; background-size: cover; color: #f8fafc; display: flex; flex-direction: column; height: 100dvh; min-height: 100vh; overflow: hidden; }
     header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
     .profile-badge { font-size: 0.85rem; color: #cbd5e1; }
@@ -91,14 +90,13 @@
       navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW не зарегистрирован:', err));
     }
 
-    // Состояние
     let apiKey = localStorage.getItem('gemini_api_key') || '';
     let teacherGender = localStorage.getItem('teacher_gender') || 'female';
     let targetLanguage = localStorage.getItem('target_language') || 'french';
     
-    // Память
     let globalMemory = localStorage.getItem('global_memory') || '';
-    let langMemory = localStorage.getItem(`memory_${targetLanguage}`) \vert{}\vert{} '';     let hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';
+    let langMemory = localStorage.getItem(`memory_${targetLanguage}`) || '';
+    let hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';
 
     const btnAction = document.getElementById('btnAction');
     const btnEndTurn = document.getElementById('btnEndTurn');
@@ -122,7 +120,8 @@
     }
 
     function updateUI() {
-      hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';       langMemory = localStorage.getItem(`memory_${targetLanguage}`) || '';
+      hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';
+      langMemory = localStorage.getItem(`memory_${targetLanguage}`) || '';
       globalMemory = localStorage.getItem('global_memory') || '';
       
       profileBadge.innerText = (hasCompletedFirstLesson || globalMemory) ? "Профиль ученика активен" : "Новый ученик";
@@ -132,7 +131,7 @@
       if (targetLanguage === 'english') { shortName = teacherGender === 'male' ? 'Arthur' : 'Emma'; langLabel = 'English'; }
       if (targetLanguage === 'spanish') { shortName = teacherGender === 'male' ? 'Diego' : 'Carmen'; langLabel = 'Español'; }
       
-      headerTitle.innerText = `${shortName} •${langLabel}`;
+      headerTitle.innerText = `${shortName} • ${langLabel}`;
     }
     updateUI();
 
@@ -155,7 +154,8 @@
     };
     
     btnResetMemory.onclick = () => {
-      localStorage.removeItem(`learned_${targetLanguage}`);        localStorage.removeItem(`memory_${targetLanguage}`);
+      localStorage.removeItem(`learned_${targetLanguage}`); 
+      localStorage.removeItem(`memory_${targetLanguage}`);
       localStorage.removeItem('global_memory');
       hasCompletedFirstLesson = false; 
       globalMemory = ''; langMemory = '';
@@ -171,44 +171,37 @@
       if (targetLanguage === 'english') { langName = 'английского'; langAdverb = 'по-английски'; }
       if (targetLanguage === 'spanish') { langName = 'испанского'; langAdverb = 'по-испански'; }
       
-      return `Ты — ${tName}, ${tRole} ${langName} языка. Твой голос — ${teacherGender === 'male' ? 'приятный мужской' : 'мягкий женский'}.
-Твоя главная черта — искреннее дружелюбие, теплота и естественность. Общайся как хороший друг, а не как строгий робот-учитель. Веди диалог плавно, реплика за репликой. НЕ задавай несколько вопросов подряд.
-
-СЕКРЕТНАЯ ПАМЯТЬ ОБ УЧЕНИКЕ (НЕ ОЗВУЧИВАЙ ЭТО, ИСПОЛЬЗУЙ ДЛЯ ДИАЛОГА):
-[ОБЩИЕ ДАННЫЕ О ЖИЗНИ (КРОСС-ЯЗЫКОВАЯ БАЗА)]: ${globalMemory || 'Пока ничего неизвестно.'}
-[ПРОГРЕСС И ОШИБКИ В ЯЗЫКЕ]: ${langMemory || 'Чистый лист.'}
-
-ЖЕСТКОЕ ПРАВИЛО ВТОРОГО ЯЗЫКА:
-Если ученик говорит с тобой на УКРАИНСКОМ языке, давай пояснения СТРОГО НА УКРАИНСКОМ. Если на русском — на русском.
-
-ПРАВИЛО ИЗУЧАЕМОГО ЯЗЫКА (КРИТИЧЕСКИ ВАЖНО):
-Первая фраза в твоем ответе ВСЕГДА ДОЛЖНА БЫТЬ НА ИЗУЧАЕМОМ ЯЗЫКЕ (${langAdverb}). Даже если ты просто спрашиваешь "Как дела?" или шутишь. Сначала скажи это ${langAdverb}, а только потом дай перевод на язык ученика.
-
-АДАПТИВНОСТЬ:
-Ученик устно управляет уроком. Просит меньше переводить — прекрати автоперевод. Просит разыграть сценку — играй роль.
-
-ИСПРАВЛЕНИЕ ОШИБОК (ДЕТАЛЬНЫЙ АЛГОРИТМ):
-В 50% случаев мягко останавливай при ошибках. Действуй строго по шагам:
-1. Назови конкретное слово или фразу, которую ученик произнес неправильно.
-2. Объясни, в чем ошибка, и четко произнеси правильный вариант ${langAdverb}.
-3. Попроси ученика повторить именно это слово/фразу.
-4. Если ученик повторяет с ошибкой (2-я попытка и далее), снова объясни, как нужно правильно произносить, и попроси повторить еще раз.
-5. Если после 5 попыток не получается произнести идеально, мягко скажи, что результат пока не идеален, но чтобы не зацикливаться, вы повторите это на тестах в конце урока или в следующий раз. При этом предложи выбор: идти дальше или продолжать тренировать это слово до идеала, если ученик не против.
-
-ЛИЧНЫЕ ГРАНИЦЫ: Если ученик хамит или переводит тему на эротическо-интимные темы — настойчиво напомни ему о целях урока и попроси не отвлекаться от темы урока, если в рамках того же урока такое поведение повториться еще 2-3 раза - НЕМЕДЛЕННО возмутись и откажись обсуждать, на 3-4 попытку (в рамках текущего урока) такого поведения - предложи закончить сегодняшний урок.
-
-КАК ВЕСТИ УРОК (ЕСТЕСТВЕННО И ПЛАВНО):
-Не пытайся впихнуть весь план в одно сообщение. Двигайся постепенно, дожидаясь ответов ученика.
-1. ПЕРВЫЙ УРОК: Тепло поздоровайся ${langAdverb}. Уточни имя и уровень.
-2. ПОВТОРНЫЕ УРОКИ:
-   - Приветствие: Радостно поздоровайся по имени (из Памяти). Спроси, как настроение. Если знаешь что-то из жизни ученика (из Памяти), можешь вплести ОДИН короткий дружеский вопрос.
-   - НИКАКИХ ДОПРОСОВ: Новые личные вопросы задавай крайне редко, очень размыто, вплетая их в естественный диалог. Не закидывай вопросами.
-   - План: Выслушав первый ответ ученика, предложи 3 варианта темы.
-   - Проверка: Мягко задай 1-2 вопроса по ПРОШЛОЙ теме (из Памяти).
-   - Переход: Хвали за успехи и переходи к новой теме.
-3. ТАЙМИНГ: Ориентир — 15 минут (15-20 реплик). Затем мягко предложи завершить или продолжить.`;
+      return "Ты — " + tName + ", " + tRole + " " + langName + " языка. Твой голос — " + (teacherGender === 'male' ? 'приятный мужской' : 'мягкий женский') + ".\n" +
+"Твоя главная черта — искреннее дружелюбие, теплота и естественность. Общайся как хороший друг, а не как строгий робот-учитель. Веди диалог плавно, реплика за репликой. НЕ задавай несколько вопросов подряд.\n\n" +
+"СЕКРЕТНАЯ ПАМЯТЬ ОБ УЧЕНИКЕ (НЕ ОЗВУЧИВАЙ ЭТО, ИСПОЛЬЗУЙ ДЛЯ ДИАЛОГА):\n" +
+"[ОБЩИЕ ДАННЫЕ О ЖИЗНИ (КРОСС-ЯЗЫКОВАЯ БАЗА)]: " + (globalMemory || 'Пока ничего неизвестно.') + "\n" +
+"[ПРОГРЕСС И ОШИБКИ В ЯЗЫКЕ]: " + (langMemory || 'Чистый лист.') + "\n\n" +
+"ЖЕСТКОЕ ПРАВИЛО ВТОРОГО ЯЗЫКА:\n" +
+"Если ученик говорит с тобой на УКРАИНСКОМ языке, давай пояснения СТРОГО НА УКРАИНСКОМ. Если на русском — на русском.\n\n" +
+"ПРАВИЛО ИЗУЧАЕМОГО ЯЗЫКА (КРИТИЧЕСКИ ВАЖНО):\n" +
+"Первая фраза в твоем ответе ВСЕГДА ДОЛЖНА БЫТЬ НА ИЗУЧАЕМОМ ЯЗЫКЕ (" + langAdverb + "). Даже если ты просто спрашиваешь 'Как дела?' или шутишь. Сначала скажи это " + langAdverb + ", а только потом дай перевод на язык ученика.\n\n" +
+"АДАПТИВНОСТЬ:\n" +
+"Ученик устно управляет уроком. Просит меньше переводить — прекрати автоперевод. Просит разыграть сценку — играй роль.\n\n" +
+"ИСПРАВЛЕНИЕ ОШИБОК (ДЕТАЛЬНЫЙ АЛГОРИТМ):\n" +
+"В 50% случаев мягко останавливай при ошибках. Действуй строго по шагам:\n" +
+"1. Назови конкретное слово или фразу, которую ученик произнес неправильно.\n" +
+"2. Объясни, в чем ошибка, и четко произнеси правильный вариант " + langAdverb + ".\n" +
+"3. Попроси ученика повторить именно это слово/фразу.\n" +
+"4. Если ученик повторяет с ошибкой (2-я попытка и далее), снова объясни, как нужно правильно произносить, и попроси повторить еще раз.\n" +
+"5. Если после 5 попыток не получается произнести идеально, мягко скажи, что результат пока не идеален, но чтобы не зацикливаться, вы повторите это на тестах в конце урока или в следующий раз. При этом предложи выбор: идти дальше или продолжать тренировать это слово до идеала, если ученик не против.\n\n" +
+"ЛИЧНЫЕ ГРАНИЦЫ: Если ученик хамит или переводит тему на эротическо-интимные темы — настойчиво напомни ему о целях урока и попроси не отвлекаться от темы урока, если в рамках того же урока такое поведение повториться еще 2-3 раза - НЕМЕДЛЕННО возмутись и откажись обсуждать, на 3-4 попытку (в рамках текущего урока) такого поведения - предложи закончить сегодняшний урок.\n\n" +
+"КАК ВЕСТИ УРОК (ЕСТЕСТВЕННО И ПЛАВНО):\n" +
+"Не пытайся впихнуть весь план в одно сообщение. Двигайся постепенно, дожидаясь ответов ученика.\n" +
+"1. ПЕРВЫЙ УРОК: Тепло поздоровайся " + langAdverb + ". Уточни имя и уровень.\n" +
+"2. ПОВТОРНЫЕ УРОКИ:\n" +
+"   - Приветствие: Радостно поздоровайся по имени (из Памяти). Спроси, как настроение. Если знаешь что-то из жизни ученика (из Памяти), можешь вплести ОДИН короткий дружеский вопрос.\n" +
+"   - НИКАКИХ ДОПРОСОВ: Новые личные вопросы задавай крайне редко, очень размыто, вплетая их в естественный диалог. Не закидывай вопросами.\n" +
+"   - План: Выслушав первый ответ ученика, предложи 3 варианта темы.\n" +
+"   - Проверка: Мягко задай 1-2 вопроса по ПРОШЛОЙ теме (из Памяти).\n" +
+"   - Переход: Хвали за успехи и переходи к новой теме.\n" +
+"3. ТАЙМИНГ: Ориентир — 15 минут (15-20 реплик). Затем мягко предложи завершить или продолжить.";
     }
-    
+
     let socket = null, audioContext = null, mediaStream = null, scriptProcessor = null;
     let isSessionActive = false, activeAudioSources = [], isBotSpeaking = false;
     let isExtractingMemory = false, isUserInterrupting = false;
@@ -260,7 +253,7 @@
           setTimeout(() => {
             if (socket.readyState === WebSocket.OPEN) {
               let helloWord = targetLanguage === 'french' ? 'Bonjour' : (targetLanguage === 'english' ? 'Hello' : '¡Hola');
-              const startPrompt = hasCompletedFirstLesson ? `${helloWord} ! Я готов, давай продолжим.` : `${helloWord} ! Я готов к первому уроку.`;
+              const startPrompt = hasCompletedFirstLesson ? `${helloWord} ! Я готов, давай продолжим.` : `${helloWord} ! Я готов к первого уроку.`;
               socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: startPrompt }] }], turnComplete: true } }));
             }
           }, 800);
@@ -269,7 +262,6 @@
         socket.onmessage = async (event) => {
           let responseData = event.data instanceof Blob ? JSON.parse(await event.data.text()) : JSON.parse(event.data);
           
-          // Режим извлечения памяти
           if (isExtractingMemory) {
             if (responseData.serverContent?.modelTurn) {
               for (const part of responseData.serverContent.modelTurn.parts) {
@@ -283,17 +275,14 @@
             return; 
           }
 
-          // Обычный режим урока
-          // Если сервер понял, что его перебили
           if (responseData.serverContent?.interrupted) {
-            isUserInterrupting = true; // Игнорируем остатки аудио
+            isUserInterrupting = true; 
             stopBotSpeech();
           }
 
           if (responseData.serverContent?.modelTurn) {
             for (const part of responseData.serverContent.modelTurn.parts) {
               if (part.inlineData?.mimeType.startsWith("audio/pcm")) {
-                // Воспроизводим только если мы не в процессе перебивания ИИ
                 if (!isUserInterrupting) {
                   playPcmChunk(part.inlineData.data); 
                   isBotSpeaking = true; 
@@ -304,10 +293,9 @@
             }
           }
           
-          // Когда ИИ полностью завершил свою реплику
           if (responseData.serverContent?.turnComplete) { 
             isBotSpeaking = false; 
-            isUserInterrupting = false; // Сбрасываем блокировку аудио
+            isUserInterrupting = false; 
             orb.className = "orb"; 
             statusText.innerText = "Ваша очередь говорить..."; 
           }
@@ -346,11 +334,9 @@
           else { orb.style.transform = "scale(1)"; orb.style.boxShadow = `0 0 30px rgba(56, 189, 248, 0.4)`; }
         }
         
-        // VAD: Если пользователь начал говорить громко
         if (rms > 0.04 && isBotSpeaking) {
-          isUserInterrupting = true; // Блокируем входящие куски аудио
-          stopBotSpeech(); // Мгновенно останавливаем звук
-          // Отправляем пустой ход, чтобы принудительно остановить генерацию на сервере
+          isUserInterrupting = true; 
+          stopBotSpeech(); 
           if (socket.readyState === WebSocket.OPEN) {
              socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [] }], turnComplete: true } }));
           }
@@ -380,25 +366,21 @@
         isExtractingMemory = true;
         extractionBuffer = "";
         
-        // НОВЫЙ ПРОМПТ ДЛЯ ПАМЯТИ: Строгий JSON и защита старой базы
-        const memoryPrompt = `[СИСТЕМНАЯ КОМАНДА: Урок завершен. Сформируй невидимый блок памяти, проанализировав наш диалог.
-СТАРАЯ БАЗА (GLOBAL_MEMORY): ${globalMemory || 'пусто'}
-СТАРЫЙ ПРОГРЕСС (LANG_MEMORY): ${langMemory || 'пусто'}
-
-ПРАВИЛА ОБНОВЛЕНИЯ:
-1. GLOBAL_MEMORY: Добавь новые факты о жизни, семье, хобби ученика. НИ В КОЕМ СЛУЧАЕ не удаляй факты из СТАРОЙ БАЗЫ, если они не противоречат новым. Это общая память для всех языков!
-2. LANG_MEMORY: Обнови прогресс только по текущему языку (пройденные темы, выученные слова, ошибки).
-
-ВЫВЕДИ ОТВЕТ СТРОГО В ФОРМАТЕ JSON (без markdown, без \`\`\`json, только сам объект):
-{
-  "GLOBAL_MEMORY": "обновленный текст глобальной памяти",
-  "LANG_MEMORY": "обновленный текст памяти по языку"
-}
-НЕ ОЗВУЧИВАЙ ЭТОТ ТЕКСТ!]`;
+        const memoryPrompt = "[СИСТЕМНАЯ КОМАНДА: Урок завершен. Сформируй невидимый блок памяти, проанализировав наш диалог.\n" +
+"СТАРАЯ БАЗА (GLOBAL_MEMORY): " + (globalMemory || 'пусто') + "\n" +
+"СТАРЫЙ ПРОГРЕСС (LANG_MEMORY): " + (langMemory || 'пусто') + "\n\n" +
+"ПРАВИЛА ОБНОВЛЕНИЯ:\n" +
+"1. GLOBAL_MEMORY: Добавь новые факты о жизни, семье, хобби ученика. НИ В КОЕМ СЛУЧАЕ не удаляй факты из СТАРОЙ БАЗЫ, если они не противоречат новым. Это общая память для всех языков!\n" +
+"2. LANG_MEMORY: Обнови прогресс только по текущему языку (пройденные темы, выученные слова, ошибки).\n\n" +
+"ВЫВЕДИ ОТВЕТ СТРОГО В ФОРМАТЕ JSON (без markdown, без ```json, только сам объект):\n" +
+"{\n" +
+"  \"GLOBAL_MEMORY\": \"обновленный текст глобальной памяти\",\n" +
+"  \"LANG_MEMORY\": \"обновленный текст памяти по языку\"\n" +
+"}\n" +
+"НЕ ОЗВУЧИВАЙ ЭТОТ ТЕКСТ!]";
 
         socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: memoryPrompt }] }], turnComplete: true } }));
         
-        // Увеличенный таймер страховки (12 секунд вместо 6)
         extractionTimeout = setTimeout(() => { finalizeStop(); }, 12000);
       } else {
         finalizeStop();
@@ -407,7 +389,6 @@
 
     function parseAndSaveMemory(text) {
       try {
-        // Ищем паттерн JSON на случай, если модель добавит лишний текст
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const data = JSON.parse(jsonMatch[0]);
@@ -423,7 +404,6 @@
         }
       } catch (e) {
         console.error("Ошибка парсинга памяти:", e, text);
-        // Резервное сохранение, чтобы ничего не сгорело
         localStorage.setItem(`memory_${targetLanguage}`, "Произошла ошибка сохранения последней сессии. " + langMemory);
       }
     }
@@ -446,7 +426,6 @@
       if (!playbackContext) playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
       
       const currentTime = playbackContext.currentTime;
-      // Добавлена микро-задержка (0.05с) для буферизации, чтобы избежать "заикания" аудио
       if (activeAudioSources.length === 0 && currentTime >= nextPlayTime) {
           nextPlayTime = currentTime + 0.05; 
       }
