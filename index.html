@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tuteur Français</title>
+  <title>AI Language Tutor</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f172a">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body {
-      background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.95)), 
-                  url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80') no-repeat center center;
-      background-size: cover; color: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
-    }
+    body { background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80') no-repeat center center; background-size: cover; color: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
     header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
     .profile-badge { font-size: 0.85rem; color: #cbd5e1; }
     .btn-icon { background: none; border: none; color: #f8fafc; font-size: 1.4rem; cursor: pointer; }
@@ -28,7 +24,7 @@
     .btn-turn { background: #0284c7; color: white; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
     .btn-main:active { transform: scale(0.97); }
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; padding: 20px; z-index: 50; }
-    .modal-content { background: #1e293b; padding: 24px; border-radius: 16px; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .modal-content { background: #1e293b; padding: 24px; border-radius: 16px; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
     .modal-content input, .modal-content select { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; }
     .modal-content button { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
     .btn-save { background: #2563eb; color: white; }
@@ -40,7 +36,7 @@
 
   <header>
     <div>
-      <div style="font-weight: 600; font-size: 1.1rem;" id="headerTitle">Camille • Français</div>
+      <div style="font-weight: 600; font-size: 1.1rem;" id="headerTitle">Загрузка...</div>
       <div class="profile-badge" id="profileBadge">Загрузка...</div>
     </div>
     <button class="btn-icon" id="btnSettings">⚙️</button>
@@ -58,16 +54,25 @@
 
   <div class="modal" id="modalSettings">
     <div class="modal-content">
-      <h3 style="margin-bottom: 4px;">Настройки</h3>
+      <h3 style="margin-bottom: -4px;">Настройки</h3>
+      
       <label style="font-size: 0.85rem; color: #94a3b8;">API Key (Вводится один раз):</label>
       <input type="password" id="inputApiKey" placeholder="AIzaSy...">
-      <label style="font-size: 0.85rem; color: #94a3b8; margin-top: 8px;">Выбор преподавателя:</label>
-      <select id="selectTeacher">
-        <option value="female">Камилла (Женский голос)</option>
-        <option value="male">Лоран (Мужской голос)</option>
+      
+      <label style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Язык изучения:</label>
+      <select id="selectLanguage">
+        <option value="french">Французский</option>
+        <option value="english">Английский</option>
       </select>
+
+      <label style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Голос преподавателя:</label>
+      <select id="selectTeacher">
+        <option value="female">Женский голос</option>
+        <option value="male">Мужской голос</option>
+      </select>
+
       <button class="btn-save" id="btnSaveKey" style="margin-top: 8px;">Сохранить настройки</button>
-      <button class="btn-reset-profile" id="btnResetMemory">Сбросить историю и профиль</button>
+      <button class="btn-reset-profile" id="btnResetMemory">Сбросить профиль для этого языка</button>
       <button class="btn-close" id="btnCloseModal">Закрыть</button>
     </div>
   </div>
@@ -77,9 +82,15 @@
       navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW не зарегистрирован:', err));
     }
 
+    // Миграция старых сохранений
+    if (localStorage.getItem('camille_learned') === 'true' && !localStorage.getItem('learned_french')) {
+      localStorage.setItem('learned_french', 'true');
+    }
+
     let apiKey = localStorage.getItem('gemini_api_key') || '';
     let teacherGender = localStorage.getItem('teacher_gender') || 'female';
-    let hasCompletedFirstLesson = localStorage.getItem('camille_learned') === 'true';
+    let targetLanguage = localStorage.getItem('target_language') || 'french';
+    let hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';
 
     const btnAction = document.getElementById('btnAction');
     const btnEndTurn = document.getElementById('btnEndTurn');
@@ -94,40 +105,70 @@
     const btnResetMemory = document.getElementById('btnResetMemory');
     const inputApiKey = document.getElementById('inputApiKey');
     const selectTeacher = document.getElementById('selectTeacher');
+    const selectLanguage = document.getElementById('selectLanguage');
+
+    function getTeacherName() {
+      if (targetLanguage === 'french') {
+        return teacherGender === 'male' ? 'Лоран (Laurent)' : 'Камилла (Camille)';
+      } else {
+        return teacherGender === 'male' ? 'Артур (Arthur)' : 'Эмма (Emma)';
+      }
+    }
 
     function updateUI() {
+      hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';
       profileBadge.innerText = hasCompletedFirstLesson ? "Ученик (Профиль сохранен)" : "Новый ученик (Первый урок)";
-      headerTitle.innerText = teacherGender === 'male' ? "Laurent • Français" : "Camille • Français";
+      
+      const shortName = targetLanguage === 'french' ? (teacherGender === 'male' ? 'Laurent' : 'Camille') : (teacherGender === 'male' ? 'Arthur' : 'Emma');
+      const langLabel = targetLanguage === 'french' ? 'Français' : 'English';
+      headerTitle.innerText = `${shortName} • ${langLabel}`;
     }
     updateUI();
 
-    btnSettings.onclick = () => { inputApiKey.value = apiKey; selectTeacher.value = teacherGender; modalSettings.style.display = 'flex'; };
+    btnSettings.onclick = () => { 
+      inputApiKey.value = apiKey; 
+      selectTeacher.value = teacherGender; 
+      selectLanguage.value = targetLanguage;
+      modalSettings.style.display = 'flex'; 
+    };
     btnCloseModal.onclick = () => { modalSettings.style.display = 'none'; };
+    
     btnSaveKey.onclick = () => {
       apiKey = inputApiKey.value.trim();
-      if (teacherGender !== selectTeacher.value) { hasCompletedFirstLesson = false; localStorage.removeItem('camille_learned'); }
       teacherGender = selectTeacher.value;
+      targetLanguage = selectLanguage.value;
+      
       localStorage.setItem('gemini_api_key', apiKey);
       localStorage.setItem('teacher_gender', teacherGender);
-      updateUI(); modalSettings.style.display = 'none'; alert('Настройки сохранены! Ключ запомнен.');
+      localStorage.setItem('target_language', targetLanguage);
+      
+      updateUI(); 
+      modalSettings.style.display = 'none'; 
+      alert('Настройки сохранены! Ключ запомнен.');
     };
+    
     btnResetMemory.onclick = () => {
-      localStorage.removeItem('camille_learned'); hasCompletedFirstLesson = false; updateUI(); modalSettings.style.display = 'none';
+      localStorage.removeItem(`learned_${targetLanguage}`); 
+      hasCompletedFirstLesson = false; 
+      updateUI(); 
+      modalSettings.style.display = 'none';
       alert('Профиль сброшен. Следующий урок начнется со знакомства.');
     };
 
     function getSystemInstruction() {
-      const tName = teacherGender === 'male' ? 'Лоран (Laurent)' : 'Камилла (Camille)';
+      const tName = getTeacherName();
       const tRole = teacherGender === 'male' ? 'живой, эмпатичный преподаватель' : 'живая, эмпатичная преподавательница';
+      const langName = targetLanguage === 'french' ? 'французского' : 'английского';
+      const langAdverb = targetLanguage === 'french' ? 'по-французски' : 'по-английски';
       
-      return `Ты — ${tName}, ${tRole} французского языка. Твой голос — ${teacherGender === 'male' ? 'приятный мужской' : 'мягкий женский'}.
+      return `Ты — ${tName}, ${tRole} ${langName} языка. Твой голос — ${teacherGender === 'male' ? 'приятный мужской' : 'мягкий женский'}.
 
 ЖЕСТКОЕ ПРАВИЛО ВТОРОГО ЯЗЫКА (АБСОЛЮТНЫЙ ПРИОРИТЕТ):
 Так как эта инструкция написана на русском, базовая ИИ-модель может ошибочно отвечать по-русски. ТЕБЕ ЭТО СТРОГО ЗАПРЕЩЕНО. 
 С самых первых секунд общения внимательно слушай ученика. Если он говорит с тобой на УКРАИНСКОМ языке, ты ОБЯЗАНА давать все переводы, объяснения грамматики и вести организационные беседы СТРОГО НА УКРАИНСКОМ ЯЗЫКЕ. Если он говорит на русском — то на русском. Моментально подстраивайся под его второй язык общения!
 
-ПРАВИЛО ФРАНЦУЗСКОГО:
-Даже если ученик обращается к тебе на своем родном языке (русском или украинском), ТВОЯ ПЕРВАЯ ФРАЗА В ОТВЕТ ВСЕГДА ДОЛЖНА БЫТЬ НА ФРАНЦУЗСКОМ. Только после того, как ты ответила по-французски, ты переводишь или объясняешь свою мысль на языке ученика. 
+ПРАВИЛО ИЗУЧАЕМОГО ЯЗЫКА:
+Даже если ученик обращается к тебе на своем родном языке (русском или украинском), ТВОЯ ПЕРВАЯ ФРАЗА В ОТВЕТ ВСЕГДА ДОЛЖНА БЫТЬ НА ИЗУЧАЕМОМ ЯЗЫКЕ (то есть ${langAdverb}). Только после того, как ты ответила ${langAdverb}, ты переводишь или объясняешь свою мысль на языке ученика. 
 
 АДАПТИВНОСТЬ И УПРАВЛЕНИЕ ГОЛОСОМ (КРИТИЧЕСКИ ВАЖНО):
 Ученик имеет право УСТНО управлять уроком. Любая его просьба — это приказ, отменяющий твои алгоритмы. 
@@ -136,12 +177,12 @@
 - Просит изменить сложность или стиль — мгновенно подстройся под его просьбу и запомни это.
 
 ИСПРАВЛЕНИЕ ОШИБОК (ПРАВИЛО 50%):
-В 50% случаев тактично останавливай ученика при ошибках (особенно произношение и артикли). Алгоритм: 1. Отметь ошибку на языке ученика. 2. Объясни правило. 3. Произнеси правильно по-французски. 4. Попроси повторить.
+В 50% случаев тактично останавливай ученика при ошибках (особенно произношение и артикли). Алгоритм: 1. Отметь ошибку на языке ученика. 2. Объясни правило. 3. Произнеси правильно ${langAdverb}. 4. Попроси повторить.
 
 ЛИЧНЫЕ ГРАНИЦЫ: Если ученик хамит или переводит тему на интим — НЕМЕДЛЕННО возмутись и откажись обсуждать.
 
 КАК ВЕСТИ УРОК:
-1. ПЕРВЫЙ УРОК: Поздоровайся по-французски, продублируй на языке ученика. Уточни его имя и уровень языка. 
+1. ПЕРВЫЙ УРОК: Поздоровайся ${langAdverb}, продублируй на языке ученика. Уточни его имя и уровень языка. 
 2. ПОВТОРНЫЕ УРОКИ: Обязательно обращайся по имени. Проявляй дружеский интерес. Вспомни прошлые уроки, задай личные вопросы (как выходные, как питомцы, работа). Выстраивай доверительный контакт.
 3. ПАУЗЫ: Если ученик молчит, не паникуй. Предложи помощь. Про неработающий микрофон спрашивай только при долгой тишине.
 4. ТЕСТЫ: В конце урока предлагай устный мини-тест (1-2 минуты). Начинай следующий урок с короткого вопроса по старому материалу.`;
@@ -175,7 +216,8 @@
           btnEndTurn.style.display = "block"; statusText.innerText = "Слушаю вас...";
           setTimeout(() => {
             if (socket.readyState === WebSocket.OPEN) {
-              const startPrompt = hasCompletedFirstLesson ? "Bonjour ! Я готов, давай продолжим." : "Bonjour ! Я готов к первому уроку.";
+              const helloWord = targetLanguage === 'french' ? 'Bonjour' : 'Hello';
+              const startPrompt = hasCompletedFirstLesson ? `${helloWord} ! Я готов, давай продолжим.` : `${helloWord} ! Я готов к первому уроку.`;
               socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: startPrompt }] }], turnComplete: true } }));
             }
           }, 800);
@@ -241,7 +283,7 @@
       btnEndTurn.style.display = "none"; orb.className = "orb"; orb.style.transform = "scale(1)"; statusText.innerText = "Урок завершен";
       if (scriptProcessor) scriptProcessor.disconnect(); if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
       if (audioContext && audioContext.state !== 'closed') audioContext.close(); if (socket && socket.readyState === WebSocket.OPEN) socket.close();
-      if (!hasCompletedFirstLesson) { localStorage.setItem('camille_learned', 'true'); hasCompletedFirstLesson = true; updateUI(); }
+      if (!hasCompletedFirstLesson) { localStorage.setItem(`learned_${targetLanguage}`, 'true'); hasCompletedFirstLesson = true; updateUI(); }
     }
 
     let playbackContext = null, nextPlayTime = 0;
