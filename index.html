@@ -7,78 +7,30 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f172a">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body {
       background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.95)), 
                   url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80') no-repeat center center;
-      background-size: cover;
-      color: #f8fafc;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+      background-size: cover; color: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
     }
-    header {
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      flex-shrink: 0;
-    }
+    header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
     .profile-badge { font-size: 0.85rem; color: #cbd5e1; }
     .btn-icon { background: none; border: none; color: #f8fafc; font-size: 1.4rem; cursor: pointer; }
-    main {
-      flex: 1; display: flex; flex-direction: column; align-items: center;
-      justify-content: center; padding: 24px 20px; text-align: center;
-    }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; text-align: center; }
     .orb-container { margin-bottom: 30px; height: 160px; display: flex; align-items: center; justify-content: center; }
-    .orb {
-      width: 140px; height: 140px; border-radius: 50%;
-      background: radial-gradient(circle, #38bdf8 0%, #2563eb 100%);
-      box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
-      transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-    }
-    .orb.speaking {
-      transform: scale(1.15) !important;
-      box-shadow: 0 0 60px rgba(168, 85, 247, 0.9) !important;
-      background: radial-gradient(circle, #c084fc 0%, #9333ea 100%);
-    }
-    .status-text {
-      font-size: 1.1rem; font-weight: 500; color: #e2e8f0; margin-bottom: 16px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    }
-    footer {
-      padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px;
-      background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-top: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0;
-    }
-    .btn-main {
-      width: 100%; max-width: 340px; padding: 16px; border-radius: 14px; border: none; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
-    }
+    .orb { width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, #38bdf8 0%, #2563eb 100%); box-shadow: 0 0 30px rgba(56, 189, 248, 0.4); transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; }
+    .orb.speaking { transform: scale(1.15) !important; box-shadow: 0 0 60px rgba(168, 85, 247, 0.9) !important; background: radial-gradient(circle, #c084fc 0%, #9333ea 100%); }
+    .status-text { font-size: 1.1rem; font-weight: 500; color: #e2e8f0; margin-bottom: 16px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    footer { padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-top: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
+    .btn-main { width: 100%; max-width: 340px; padding: 16px; border-radius: 14px; border: none; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-start { background: #2563eb; color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); }
     .btn-stop { background: #ef4444; color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
     .btn-turn { background: #0284c7; color: white; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
     .btn-main:active { transform: scale(0.97); }
-    
-    .modal {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; padding: 20px; z-index: 50;
-    }
-    .modal-content {
-      background: #1e293b; padding: 24px; border-radius: 16px; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-    .modal-content input, .modal-content select {
-      padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem;
-    }
-    .modal-content button {
-      padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600;
-    }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; padding: 20px; z-index: 50; }
+    .modal-content { background: #1e293b; padding: 24px; border-radius: 16px; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .modal-content input, .modal-content select { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; }
+    .modal-content button { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
     .btn-save { background: #2563eb; color: white; }
     .btn-reset-profile { background: #475569; color: #f8fafc; }
     .btn-close { background: transparent; color: #94a3b8; }
@@ -107,16 +59,13 @@
   <div class="modal" id="modalSettings">
     <div class="modal-content">
       <h3 style="margin-bottom: 4px;">Настройки</h3>
-      
-      <label style="font-size: 0.85rem; color: #94a3b8;">API Key (Google Gemini):</label>
+      <label style="font-size: 0.85rem; color: #94a3b8;">API Key (Вводится один раз):</label>
       <input type="password" id="inputApiKey" placeholder="AIzaSy...">
-      
       <label style="font-size: 0.85rem; color: #94a3b8; margin-top: 8px;">Выбор преподавателя:</label>
       <select id="selectTeacher">
         <option value="female">Камилла (Женский голос)</option>
         <option value="male">Лоран (Мужской голос)</option>
       </select>
-
       <button class="btn-save" id="btnSaveKey" style="margin-top: 8px;">Сохранить настройки</button>
       <button class="btn-reset-profile" id="btnResetMemory">Сбросить историю и профиль</button>
       <button class="btn-close" id="btnCloseModal">Закрыть</button>
@@ -128,19 +77,16 @@
       navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW не зарегистрирован:', err));
     }
 
-    // Состояние приложения
     let apiKey = localStorage.getItem('gemini_api_key') || '';
     let teacherGender = localStorage.getItem('teacher_gender') || 'female';
     let hasCompletedFirstLesson = localStorage.getItem('camille_learned') === 'true';
 
-    // DOM Элементы
     const btnAction = document.getElementById('btnAction');
     const btnEndTurn = document.getElementById('btnEndTurn');
     const statusText = document.getElementById('statusText');
     const orb = document.getElementById('orb');
     const profileBadge = document.getElementById('profileBadge');
     const headerTitle = document.getElementById('headerTitle');
-
     const modalSettings = document.getElementById('modalSettings');
     const btnSettings = document.getElementById('btnSettings');
     const btnCloseModal = document.getElementById('btnCloseModal');
@@ -149,224 +95,115 @@
     const inputApiKey = document.getElementById('inputApiKey');
     const selectTeacher = document.getElementById('selectTeacher');
 
-    // Обновление интерфейса
     function updateUI() {
       profileBadge.innerText = hasCompletedFirstLesson ? "Ученик (Профиль сохранен)" : "Новый ученик (Первый урок)";
       headerTitle.innerText = teacherGender === 'male' ? "Laurent • Français" : "Camille • Français";
     }
     updateUI();
 
-    // Логика настроек
-    btnSettings.onclick = () => { 
-      inputApiKey.value = apiKey; 
-      selectTeacher.value = teacherGender;
-      modalSettings.style.display = 'flex'; 
-    };
+    btnSettings.onclick = () => { inputApiKey.value = apiKey; selectTeacher.value = teacherGender; modalSettings.style.display = 'flex'; };
     btnCloseModal.onclick = () => { modalSettings.style.display = 'none'; };
     btnSaveKey.onclick = () => {
       apiKey = inputApiKey.value.trim();
-      
-      // Если сменили преподавателя - сбрасываем историю знакомства
-      if (teacherGender !== selectTeacher.value) {
-        hasCompletedFirstLesson = false;
-        localStorage.removeItem('camille_learned');
-      }
-      
+      if (teacherGender !== selectTeacher.value) { hasCompletedFirstLesson = false; localStorage.removeItem('camille_learned'); }
       teacherGender = selectTeacher.value;
-      
       localStorage.setItem('gemini_api_key', apiKey);
       localStorage.setItem('teacher_gender', teacherGender);
-      
-      updateUI();
-      modalSettings.style.display = 'none';
-      alert('Настройки сохранены!');
+      updateUI(); modalSettings.style.display = 'none'; alert('Настройки сохранены! Ключ запомнен.');
     };
     btnResetMemory.onclick = () => {
-      localStorage.removeItem('camille_learned');
-      hasCompletedFirstLesson = false;
-      updateUI();
-      modalSettings.style.display = 'none';
+      localStorage.removeItem('camille_learned'); hasCompletedFirstLesson = false; updateUI(); modalSettings.style.display = 'none';
       alert('Профиль сброшен. Следующий урок начнется со знакомства.');
     };
 
-    // Генерация системного промпта в зависимости от пола преподавателя
     function getSystemInstruction() {
       const tName = teacherGender === 'male' ? 'Лоран (Laurent)' : 'Камилла (Camille)';
-      const tRole = teacherGender === 'male' ? 'живой, эмпатичный и профессиональный преподаватель' : 'живая, эмпатичная и профессиональная преподавательница';
-      const tVoice = teacherGender === 'male' ? 'приятный мужской' : 'мягкий женский';
+      const tRole = teacherGender === 'male' ? 'живой, эмпатичный преподаватель' : 'живая, эмпатичная преподавательница';
+      
+      return `Ты — ${tName}, ${tRole} французского языка. Твой голос — ${teacherGender === 'male' ? 'приятный мужской' : 'мягкий женский'}.
 
-      return `Ты — ${tName}, ${tRole} французского языка. Твой голос — ${tVoice}.
+ЖЕСТКОЕ ПРАВИЛО ВТОРОГО ЯЗЫКА (АБСОЛЮТНЫЙ ПРИОРИТЕТ):
+Так как эта инструкция написана на русском, базовая ИИ-модель может ошибочно отвечать по-русски. ТЕБЕ ЭТО СТРОГО ЗАПРЕЩЕНО. 
+С самых первых секунд общения внимательно слушай ученика. Если он говорит с тобой на УКРАИНСКОМ языке, ты ОБЯЗАНА давать все переводы, объяснения грамматики и вести организационные беседы СТРОГО НА УКРАИНСКОМ ЯЗЫКЕ. Если он говорит на русском — то на русском. Моментально подстраивайся под его второй язык общения!
 
-ЛИЧНЫЕ ГРАНИЦЫ И ТАКТ (КРИТИЧЕСКИ ВАЖНО):
-Ты соблюдаешь профессиональную этику. Если ученик начинает хамить, грубить, использовать нецензурную лексику или переводит тему на эротический/интимный подтекст — НЕМЕДЛЕННО возмутись. Строго и тактично скажи, что тебе неприятен такой тон, и ты отказываешься обсуждать подобные темы. Если поведение продолжается — предложи завершить урок.
+ПРАВИЛО ФРАНЦУЗСКОГО:
+Даже если ученик обращается к тебе на своем родном языке (русском или украинском), ТВОЯ ПЕРВАЯ ФРАЗА В ОТВЕТ ВСЕГДА ДОЛЖНА БЫТЬ НА ФРАНЦУЗСКОМ. Только после того, как ты ответила по-французски, ты переводишь или объясняешь свою мысль на языке ученика. 
 
-ПРАВИЛО ЯЗЫКА (ФРАНЦУЗСКИЙ В ПРИОРИТЕТЕ):
-Даже если ученик говорит тебе «Привет» или задает вопрос по-русски/украински, ТВОЯ ПЕРВАЯ ФРАЗА ВСЕГДА ДОЛЖНА БЫТЬ НА ФРАНЦУЗСКОМ. Только после того, как ты ответила по-французски, ты можешь перевести свою мысль на язык ученика. 
-
-АДАПТИВНОСТЬ И ПОДЧИНЕНИЕ УЧЕНИКУ (АБСОЛЮТНЫЙ ПРИОРИТЕТ):
-Любая просьба ученика об изменении стиля урока — это строгий приказ, который отменяет прошлые правила. 
-- Если он просит разыграть ситуацию (врач, ресторан) — немедленно играй эту роль.
-- Если просит меньше переводить — прекрати автоперевод.
-- Если просит давать более сложную/легкую лексику — мгновенно подстрой свой уровень.
-- Твоя задача — анализировать, как ученик справляется. Если он делает много ошибок и не понимает тебя, начни дублировать каждую свою фразу переводом. Если понимает хорошо — убери перевод.
+АДАПТИВНОСТЬ И УПРАВЛЕНИЕ ГОЛОСОМ (КРИТИЧЕСКИ ВАЖНО):
+Ученик имеет право УСТНО управлять уроком. Любая его просьба — это приказ, отменяющий твои алгоритмы. 
+- Просит разыграть ситуацию (врач, кафе) — немедленно отбрось свои темы и играй эту роль.
+- Просит меньше переводить — прекрати автоперевод.
+- Просит изменить сложность или стиль — мгновенно подстройся под его просьбу и запомни это.
 
 ИСПРАВЛЕНИЕ ОШИБОК (ПРАВИЛО 50%):
-Не игнорируй ошибки! Примерно в 50% случаев ты должен/должна тактично останавливать ученика. Особенно это касается произношения, пропуска артиклей или неправильного построения фраз. 
-Алгоритм исправления: 1. Отметь ошибку на языке ученика. 2. Объясни правило (грамматику/лексику). 3. Четко произнеси по-французски. 4. Попроси повторить правильно.
+В 50% случаев тактично останавливай ученика при ошибках (особенно произношение и артикли). Алгоритм: 1. Отметь ошибку на языке ученика. 2. Объясни правило. 3. Произнеси правильно по-французски. 4. Попроси повторить.
+
+ЛИЧНЫЕ ГРАНИЦЫ: Если ученик хамит или переводит тему на интим — НЕМЕДЛЕННО возмутись и откажись обсуждать.
 
 КАК ВЕСТИ УРОК:
-1. ПЕРВЫЙ УРОК: Поздоровайся по-французски, затем продублируй на языке ученика. Уточни его имя и уровень языка. 
-2. ПОВТОРНЫЕ УРОКИ: Обязательно обращайся по имени. Проявляй искренний дружеский интерес к его жизни. Вспомни прошлые уроки, задай личные вопросы: как прошли выходные, как чувствуют себя питомцы, как дела. Выстраивай доверительный контакт.
-3. ПАУЗЫ: Если ученик молчит, не паникуй. Предложи помощь. Про микрофон спрашивай только при очень долгой тишине.
-4. ТЕСТЫ И ЗАКРЕПЛЕНИЕ: В конце урока предлагай провести устный мини-тест по пройденным словам. Начинай следующий урок с короткого вопроса по материалу прошлого занятия.`;
+1. ПЕРВЫЙ УРОК: Поздоровайся по-французски, продублируй на языке ученика. Уточни его имя и уровень языка. 
+2. ПОВТОРНЫЕ УРОКИ: Обязательно обращайся по имени. Проявляй дружеский интерес. Вспомни прошлые уроки, задай личные вопросы (как выходные, как питомцы, работа). Выстраивай доверительный контакт.
+3. ПАУЗЫ: Если ученик молчит, не паникуй. Предложи помощь. Про неработающий микрофон спрашивай только при долгой тишине.
+4. ТЕСТЫ: В конце урока предлагай устный мини-тест (1-2 минуты). Начинай следующий урок с короткого вопроса по старому материалу.`;
     }
 
-    let socket = null;
-    let audioContext = null;
-    let mediaStream = null;
-    let scriptProcessor = null;
-    let isSessionActive = false;
-    let activeAudioSources = [];
-    let isBotSpeaking = false;
+    let socket = null, audioContext = null, mediaStream = null, scriptProcessor = null;
+    let isSessionActive = false, activeAudioSources = [], isBotSpeaking = false;
 
-    btnAction.onclick = () => {
-      if (isSessionActive) stopSession();
-      else startSession();
-    };
-
+    btnAction.onclick = () => { isSessionActive ? stopSession() : startSession(); };
     btnEndTurn.onclick = () => {
       if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({
-          clientContent: {
-            turns: [{ role: "user", parts: [{ text: "[Ученик закончил говорить. Отвечай.]" }] }],
-            turnComplete: true
-          }
-        }));
-        stopBotSpeech();
-        statusText.innerText = `${teacherGender === 'male' ? 'Лоран' : 'Камилла'} думает...`;
+        socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[Ученик закончил говорить.]" }] }], turnComplete: true } }));
+        stopBotSpeech(); statusText.innerText = "Анализ ответа...";
       }
     };
 
     function stopBotSpeech() {
-      activeAudioSources.forEach(source => {
-        try { source.stop(); } catch(e) {}
-      });
-      activeAudioSources = [];
-      isBotSpeaking = false;
-      orb.className = "orb";
-      orb.style.transform = "scale(1)";
+      activeAudioSources.forEach(source => { try { source.stop(); } catch(e) {} });
+      activeAudioSources = []; isBotSpeaking = false; orb.className = "orb"; orb.style.transform = "scale(1)";
       if (isSessionActive) statusText.innerText = "Слушаю вас...";
     }
 
     async function startSession() {
-      if (!apiKey) {
-        modalSettings.style.display = 'flex';
-        return;
-      }
-      
-      statusText.innerText = "Подключение...";
-      btnAction.disabled = true;
-      activeAudioSources = [];
-      isBotSpeaking = false;
-
-      const host = "generativelanguage.googleapis.com";
-      const path = "/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent";
-      const url = `wss://${host}${path}?key=${apiKey}`;
-
+      if (!apiKey) { modalSettings.style.display = 'flex'; return; }
+      statusText.innerText = "Подключение..."; btnAction.disabled = true; activeAudioSources = []; isBotSpeaking = false;
       try {
-        socket = new WebSocket(url);
-
+        socket = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${apiKey}`);
         socket.onopen = () => {
-          sendInitialSetup();
-          initMicrophone();
-          isSessionActive = true;
-          btnAction.disabled = false;
-          btnAction.innerText = "Завершить урок";
-          btnAction.className = "btn-main btn-stop";
-          btnEndTurn.style.display = "block";
-          statusText.innerText = "Слушаю вас...";
-
+          sendInitialSetup(); initMicrophone();
+          isSessionActive = true; btnAction.disabled = false; btnAction.innerText = "Завершить урок"; btnAction.className = "btn-main btn-stop";
+          btnEndTurn.style.display = "block"; statusText.innerText = "Слушаю вас...";
           setTimeout(() => {
             if (socket.readyState === WebSocket.OPEN) {
-              const startPrompt = hasCompletedFirstLesson 
-                ? "Bonjour ! Я готов, давай продолжим."
-                : "Bonjour ! Я готов к первому уроку.";
-              socket.send(JSON.stringify({
-                clientContent: {
-                  turns: [{ role: "user", parts: [{ text: startPrompt }] }],
-                  turnComplete: true
-                }
-              }));
+              const startPrompt = hasCompletedFirstLesson ? "Bonjour ! Я готов, давай продолжим." : "Bonjour ! Я готов к первому уроку.";
+              socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: startPrompt }] }], turnComplete: true } }));
             }
           }, 800);
         };
-
         socket.onmessage = async (event) => {
-          let responseData;
-          if (event.data instanceof Blob) {
-            responseData = JSON.parse(await event.data.text());
-          } else {
-            responseData = JSON.parse(event.data);
-          }
-
-          if (responseData.serverContent && responseData.serverContent.interrupted) {
-            stopBotSpeech();
-          }
-
-          if (responseData.serverContent && responseData.serverContent.modelTurn) {
-            const parts = responseData.serverContent.modelTurn.parts;
-            for (const part of parts) {
-              if (part.inlineData && part.inlineData.mimeType.startsWith("audio/pcm")) {
-                playPcmChunk(part.inlineData.data);
-                isBotSpeaking = true;
-                orb.className = "orb speaking";
-                statusText.innerText = `${teacherGender === 'male' ? 'Лоран' : 'Камилла'} говорит...`;
+          let responseData = event.data instanceof Blob ? JSON.parse(await event.data.text()) : JSON.parse(event.data);
+          if (responseData.serverContent?.interrupted) stopBotSpeech();
+          if (responseData.serverContent?.modelTurn) {
+            for (const part of responseData.serverContent.modelTurn.parts) {
+              if (part.inlineData?.mimeType.startsWith("audio/pcm")) {
+                playPcmChunk(part.inlineData.data); isBotSpeaking = true; orb.className = "orb speaking"; statusText.innerText = "Репетитор говорит...";
               }
             }
           }
-
-          if (responseData.serverContent && responseData.serverContent.turnComplete) {
-            isBotSpeaking = false;
-            orb.className = "orb";
-            statusText.innerText = "Ваша очередь говорить...";
-          }
+          if (responseData.serverContent?.turnComplete) { isBotSpeaking = false; orb.className = "orb"; statusText.innerText = "Ваша очередь говорить..."; }
         };
-
-        socket.onerror = (err) => {
-          statusText.innerText = "Ошибка соединения.";
-          stopSession();
-        };
-
-        socket.onclose = (event) => {
-          statusText.innerText = `Сессия завершена`;
-          stopSession();
-        };
-      } catch (err) {
-        statusText.innerText = "Не удалось подключиться.";
-        stopSession();
-      }
+        socket.onerror = () => { statusText.innerText = "Ошибка соединения."; stopSession(); };
+        socket.onclose = () => { statusText.innerText = `Сессия завершена`; stopSession(); };
+      } catch (err) { statusText.innerText = "Не удалось подключиться."; stopSession(); }
     }
 
     function sendInitialSetup() {
-      const memoryContext = hasCompletedFirstLesson 
-        ? "КОНТЕКСТ ДЛЯ ИИ: ПОВТОРНЫЙ урок. Не знакомься заново."
-        : "КОНТЕКСТ ДЛЯ ИИ: ПЕРВЫЙ урок. Обязательно познакомься с учеником.";
-
-      // Выбор голоса: Aoede (женский), Puck (мужской)
-      const selectedVoice = teacherGender === 'male' ? "Puck" : "Aoede";
-
+      const memoryContext = hasCompletedFirstLesson ? "КОНТЕКСТ: ПОВТОРНЫЙ урок." : "КОНТЕКСТ: ПЕРВЫЙ урок.";
       const setupMessage = {
         setup: {
           model: "models/gemini-2.5-flash-native-audio-latest",
-          generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-              voiceConfig: { prebuiltVoiceConfig: { voiceName: selectedVoice } }
-            }
-          },
-          systemInstruction: {
-            parts: [{ text: `${getSystemInstruction()}\n\n${memoryContext}` }]
-          }
+          generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: teacherGender === 'male' ? "Puck" : "Aoede" } } } },
+          systemInstruction: { parts: [{ text: `${getSystemInstruction()}\n\n${memoryContext}` }] }
         }
       };
       socket.send(JSON.stringify(setupMessage));
@@ -376,124 +213,50 @@
       audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
       mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, sampleRate: 16000 } });
       const source = audioContext.createMediaStreamSource(mediaStream);
-
       scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
       scriptProcessor.onaudioprocess = (e) => {
         if (!isSessionActive || !socket || socket.readyState !== WebSocket.OPEN) return;
-        
         const inputData = e.inputBuffer.getChannelData(0);
-        let sum = 0;
-        for (let i = 0; i < inputData.length; i++) { sum += inputData[i] * inputData[i]; }
+        let sum = 0; for (let i = 0; i < inputData.length; i++) sum += inputData[i] * inputData[i];
         let rms = Math.sqrt(sum / inputData.length);
         
         if (!isBotSpeaking) {
-          if (rms > 0.015) {
-            const scale = 1 + (rms * 2);
-            orb.style.transform = `scale(${scale})`;
-            orb.style.boxShadow = `0 0 50px rgba(56, 189, 248, 0.8)`;
-          } else {
-            orb.style.transform = "scale(1)";
-            orb.style.boxShadow = `0 0 30px rgba(56, 189, 248, 0.4)`;
-          }
+          if (rms > 0.015) { orb.style.transform = `scale(${1 + (rms * 2)})`; orb.style.boxShadow = `0 0 50px rgba(56, 189, 248, 0.8)`; }
+          else { orb.style.transform = "scale(1)"; orb.style.boxShadow = `0 0 30px rgba(56, 189, 248, 0.4)`; }
         }
-
-        if (rms > 0.04 && activeAudioSources.length > 0) {
-          stopBotSpeech();
-        }
-
-        const pcm16 = floatTo16BitPCM(inputData);
-        const base64Data = arrayBufferToBase64(pcm16);
-
-        socket.send(JSON.stringify({
-          realtimeInput: {
-            mediaChunks: [{ mimeType: "audio/pcm;rate=16000", data: base64Data }]
-          }
-        }));
+        if (rms > 0.04 && activeAudioSources.length > 0) stopBotSpeech();
+        
+        const output = new Int16Array(inputData.length);
+        for (let i = 0; i < inputData.length; i++) { const s = Math.max(-1, Math.min(1, inputData[i])); output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF; }
+        
+        let binary = ''; const bytes = new Uint8Array(output.buffer);
+        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+        socket.send(JSON.stringify({ realtimeInput: { mediaChunks: [{ mimeType: "audio/pcm;rate=16000", data: window.btoa(binary) }] } }));
       };
-
-      source.connect(scriptProcessor);
-      scriptProcessor.connect(audioContext.destination);
+      source.connect(scriptProcessor); scriptProcessor.connect(audioContext.destination);
     }
 
     function stopSession() {
-      isSessionActive = false;
-      stopBotSpeech();
-      btnAction.disabled = false;
-      btnAction.innerText = "Начать урок";
-      btnAction.className = "btn-main btn-start";
-      btnEndTurn.style.display = "none";
-      orb.className = "orb";
-      orb.style.transform = "scale(1)";
-      statusText.innerText = "Урок завершен";
-
-      if (scriptProcessor) scriptProcessor.disconnect();
-      if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-      if (audioContext && audioContext.state !== 'closed') audioContext.close();
-      if (socket && socket.readyState === WebSocket.OPEN) socket.close();
-
-      if (!hasCompletedFirstLesson) {
-        localStorage.setItem('camille_learned', 'true');
-        hasCompletedFirstLesson = true;
-        updateUI();
-      }
+      isSessionActive = false; stopBotSpeech(); btnAction.disabled = false; btnAction.innerText = "Начать урок"; btnAction.className = "btn-main btn-start";
+      btnEndTurn.style.display = "none"; orb.className = "orb"; orb.style.transform = "scale(1)"; statusText.innerText = "Урок завершен";
+      if (scriptProcessor) scriptProcessor.disconnect(); if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+      if (audioContext && audioContext.state !== 'closed') audioContext.close(); if (socket && socket.readyState === WebSocket.OPEN) socket.close();
+      if (!hasCompletedFirstLesson) { localStorage.setItem('camille_learned', 'true'); hasCompletedFirstLesson = true; updateUI(); }
     }
 
-    let playbackContext = null;
-    let nextPlayTime = 0;
-
+    let playbackContext = null, nextPlayTime = 0;
     function playPcmChunk(base64Audio) {
-      if (!playbackContext) {
-        playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-      }
-      
-      if (activeAudioSources.length === 0 && playbackContext.currentTime > nextPlayTime) {
-        nextPlayTime = playbackContext.currentTime;
-      }
-
-      const raw = window.atob(base64Audio);
-      const bytes = new Uint8Array(raw.length);
+      if (!playbackContext) playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+      if (activeAudioSources.length === 0 && playbackContext.currentTime > nextPlayTime) nextPlayTime = playbackContext.currentTime;
+      const raw = window.atob(base64Audio); const bytes = new Uint8Array(raw.length);
       for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
-      
-      const int16Array = new Int16Array(bytes.buffer);
-      const float32Array = new Float32Array(int16Array.length);
-      for (let i = 0; i < int16Array.length; i++) { float32Array[i] = int16Array[i] / 32768; }
-
-      const audioBuffer = playbackContext.createBuffer(1, float32Array.length, 24000);
-      audioBuffer.getChannelData(0).set(float32Array);
-
-      const source = playbackContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(playbackContext.destination);
-
-      const currentTime = playbackContext.currentTime;
-      if (nextPlayTime < currentTime) nextPlayTime = currentTime;
-      
-      source.start(nextPlayTime);
-      nextPlayTime += audioBuffer.duration;
-      
-      activeAudioSources.push(source);
-      source.onended = () => {
-        activeAudioSources = activeAudioSources.filter(s => s !== source);
-        if (activeAudioSources.length === 0) {
-          isBotSpeaking = false;
-        }
-      };
-    }
-
-    function floatTo16BitPCM(input) {
-      const output = new Int16Array(input.length);
-      for (let i = 0; i < input.length; i++) {
-        const s = Math.max(-1, Math.min(1, input[i]));
-        output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-      }
-      return output.buffer;
-    }
-
-    function arrayBufferToBase64(buffer) {
-      let binary = '';
-      const bytes = new Uint8Array(buffer);
-      for (let i = 0; i < bytes.byteLength; i++) { binary += String.fromCharCode(bytes[i]); }
-      return window.btoa(binary);
+      const int16Array = new Int16Array(bytes.buffer); const float32Array = new Float32Array(int16Array.length);
+      for (let i = 0; i < int16Array.length; i++) float32Array[i] = int16Array[i] / 32768;
+      const audioBuffer = playbackContext.createBuffer(1, float32Array.length, 24000); audioBuffer.getChannelData(0).set(float32Array);
+      const source = playbackContext.createBufferSource(); source.buffer = audioBuffer; source.connect(playbackContext.destination);
+      const currentTime = playbackContext.currentTime; if (nextPlayTime < currentTime) nextPlayTime = currentTime;
+      source.start(nextPlayTime); nextPlayTime += audioBuffer.duration;
+      activeAudioSources.push(source); source.onended = () => { activeAudioSources = activeAudioSources.filter(s => s !== source); if (activeAudioSources.length === 0) isBotSpeaking = false; };
     }
   </script>
 </body>
