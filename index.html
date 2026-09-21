@@ -215,6 +215,7 @@
     }
 
     let socket = null, audioContext = null, mediaStream = null, scriptProcessor = null;
+    let playbackContext = null, nextPlayTime = 0;
     let isSessionActive = false, activeAudioSources = [], isBotSpeaking = false;
     let isExtractingMemory = false, isUserInterrupting = false;
     let isClosingNormally = false;
@@ -253,7 +254,16 @@
       isExtractingMemory = false; 
       isUserInterrupting = false;
       isClosingNormally = false;
+      isSessionActive = true;
       lastActivityTime = Date.now();
+
+      // Принудительный старт аудиодвижка по клику для обхода блокировок iOS/Android
+      if (!playbackContext) {
+          playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+      }
+      if (playbackContext.state === 'suspended') {
+          playbackContext.resume();
+      }
       
       try {
         socket = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${apiKey}`);
@@ -261,21 +271,19 @@
         socket.onopen = () => {
           sendInitialSetup(); 
           initMicrophone();
-          isSessionActive = true; 
           btnAction.disabled = false; 
           btnAction.innerText = "Завершить урок"; 
           btnAction.className = "btn-main btn-stop";
           btnEndTurn.style.display = "block"; 
           statusText.innerText = "Слушаю вас...";
           
-          // Запуск таймера контроля тишины
           if(silenceInterval) clearInterval(silenceInterval);
           silenceInterval = setInterval(() => {
             if (isSessionActive && !isBotSpeaking && !isExtractingMemory && !isUserInterrupting) {
-              if (Date.now() - lastActivityTime > 12000) { // 12 секунд абсолютной тишины
+              if (Date.now() - lastActivityTime > 12000) { 
                 if (socket && socket.readyState === WebSocket.OPEN) {
                   socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[СИСТЕМНОЕ СООБЩЕНИЕ: Ученик долго молчит. Очень коротко и мягко спроси, здесь ли он и продолжаем ли мы урок.]" }] }], turnComplete: true } }));
-                  lastActivityTime = Date.now(); // Сброс таймера, чтобы не спамить
+                  lastActivityTime = Date.now(); 
                   statusText.innerText = "Репетитор проверяет связь...";
                 }
               }
@@ -349,7 +357,7 @@
             isUserInterrupting = false; 
             orb.className = "orb"; 
             statusText.innerText = "Ваша очередь говорить..."; 
-            lastActivityTime = Date.now(); // Обнуляем таймер тишины после ответа репетитора
+            lastActivityTime = Date.now(); 
           }
         };
 
@@ -424,7 +432,7 @@
         
         if (!isBotSpeaking) {
           if (rms > 0.015) { 
-            lastActivityTime = Date.now(); // Сброс таймера тишины при любом шуме
+            lastActivityTime = Date.now(); 
             orb.style.transform = `scale(${1 + (rms * 2)})`; 
             orb.style.boxShadow = `0 0 50px rgba(56, 189, 248, 0.8)`; 
           }
@@ -435,7 +443,8 @@
           isUserInterrupting = true; 
           stopBotSpeech(); 
           if (socket.readyState === WebSocket.OPEN) {
-             socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [] }], turnComplete: true } }));
+             // ЗАМЕНЕН ПУСТОЙ МАССИВ: Теперь API не будет выбивать с ошибкой
+             socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[Ученик перебил.]" }] }], turnComplete: true } }));
           }
         }
         
@@ -455,7 +464,7 @@
       isClosingNormally = true; 
       stopBotSpeech(); 
       btnAction.disabled = true; 
-      btnEndTurn.style.display = "none"; // Прячем кнопку "Жду ответ" при штатном закрытии
+      btnEndTurn.style.display = "none";
       orb.className = "orb"; 
       orb.style.transform = "scale(1)";
       statusText.innerText = "Сохранение прогресса (закрываю урок)...";
@@ -478,12 +487,17 @@
 
     function finalizeStop() {
       if (extractionTimeout) clearTimeout(extractionTimeout);
-      if (silenceInterval) clearInterval(silenceInterval); // Останавливаем таймер тишины
+      if (silenceInterval) clearInterval(silenceInterval); 
       
+      // ЖЕСТКИЙ СБРОС ВСЕХ СОСТОЯНИЙ ПРИ ЗАКРЫТИИ
+      isSessionActive = false;
+      isExtractingMemory = false;
+      isClosingNormally = false;
+
       btnAction.disabled = false; 
       btnAction.innerText = "Начать урок"; 
       btnAction.className = "btn-main btn-start";
-      btnEndTurn.style.display = "none"; // Гарантированно прячем кнопку "Жду ответ" при любом закрытии
+      btnEndTurn.style.display = "none"; 
       
       if (statusText.innerText !== "Сеанс прерван (ошибка сети или таймаут).") {
           statusText.innerText = "Урок и прогресс сохранены.";
@@ -497,8 +511,6 @@
       updateUI();
     }
 
-    let playbackContext = null, nextPlayTime = 0;
-    
     function playPcmChunk(base64Audio) {
       if (!playbackContext) playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
       
