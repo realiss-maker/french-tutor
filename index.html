@@ -218,7 +218,7 @@
     let playbackContext = null, nextPlayTime = 0;
     let isSessionActive = false, activeAudioSources = [], isBotSpeaking = false;
     let isExtractingMemory = false, isUserInterrupting = false;
-    let isClosingNormally = false;
+    let isClosingNormally = false, isReconnecting = false;
     let extractionTimeout = null;
     let silenceInterval = null;
     let lastActivityTime = Date.now();
@@ -226,7 +226,7 @@
     btnAction.onclick = () => { isSessionActive ? stopSession() : startSession(); };
     
     btnEndTurn.onclick = () => {
-      if (socket && socket.readyState === WebSocket.OPEN && !isExtractingMemory) {
+      if (socket && socket.readyState === WebSocket.OPEN && !isExtractingMemory && !isReconnecting) {
         socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[Ученик закончил говорить. Жду твой ответ.]" }] }], turnComplete: true } }));
         stopBotSpeech(); 
         statusText.innerText = "Анализ ответа...";
@@ -239,7 +239,7 @@
       isBotSpeaking = false; 
       orb.className = "orb"; 
       orb.style.transform = "scale(1)";
-      if (isSessionActive && !isExtractingMemory) {
+      if (isSessionActive && !isExtractingMemory && !isReconnecting) {
           statusText.innerText = "Слушаю вас...";
           lastActivityTime = Date.now();
       }
@@ -247,7 +247,7 @@
 
     async function startSession() {
       if (!apiKey) { modalSettings.style.display = 'flex'; return; }
-      statusText.innerText = "Подключение..."; 
+      
       btnAction.disabled = true; 
       activeAudioSources = []; 
       isBotSpeaking = false; 
@@ -255,9 +255,9 @@
       isUserInterrupting = false;
       isClosingNormally = false;
       isSessionActive = true;
+      isReconnecting = false;
       lastActivityTime = Date.now();
 
-      // Принудительный старт аудиодвижка по клику для обхода блокировок iOS/Android
       if (!playbackContext) {
           playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
       }
@@ -265,22 +265,36 @@
           playbackContext.resume();
       }
       
+      if (!mediaStream) {
+         await initMicrophone();
+      }
+
+      connectWebSocket(false);
+    }
+
+    function connectWebSocket(isReconnectAttempt) {
+      if (!isSessionActive) return;
+      isReconnecting = isReconnectAttempt;
+      statusText.innerText = isReconnectAttempt ? "Ожидание сети... Восстановление связи..." : "Подключение...";
+
       try {
         socket = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${apiKey}`);
         
         socket.onopen = () => {
+          isReconnecting = false;
           sendInitialSetup(); 
-          initMicrophone();
+          
           btnAction.disabled = false; 
           btnAction.innerText = "Завершить урок"; 
           btnAction.className = "btn-main btn-stop";
           btnEndTurn.style.display = "block"; 
           statusText.innerText = "Слушаю вас...";
+          lastActivityTime = Date.now();
           
           if(silenceInterval) clearInterval(silenceInterval);
           silenceInterval = setInterval(() => {
-            if (isSessionActive && !isBotSpeaking && !isExtractingMemory && !isUserInterrupting) {
-              if (Date.now() - lastActivityTime > 12000) { 
+            if (isSessionActive && !isBotSpeaking && !isExtractingMemory && !isUserInterrupting && !isReconnecting) {
+              if (Date.now() - lastActivityTime > 15000) { 
                 if (socket && socket.readyState === WebSocket.OPEN) {
                   socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[СИСТЕМНОЕ СООБЩЕНИЕ: Ученик долго молчит. Очень коротко и мягко спроси, здесь ли он и продолжаем ли мы урок.]" }] }], turnComplete: true } }));
                   lastActivityTime = Date.now(); 
@@ -292,11 +306,16 @@
 
           setTimeout(() => {
             if (socket.readyState === WebSocket.OPEN) {
-              let helloWord = targetLanguage === 'french' ? 'Bonjour' : (targetLanguage === 'english' ? 'Hello' : '¡Hola');
-              const startPrompt = (hasCompletedFirstLesson || globalMemory) 
-                ? `${helloWord} ! Я готов, давай продолжим урок.` 
-                : `${helloWord} ! Я готов к первому уроку.`;
-              socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: startPrompt }] }], turnComplete: true } }));
+              if (isReconnectAttempt) {
+                 const reconnectPrompt = "[СИСТЕМНОЕ СООБЩЕНИЕ: Произошел технический обрыв интернета, но сейчас связь восстановлена! Урок НЕ закончен. Коротко и радостно скажи, что связь восстановилась, и мы можем продолжать с того же места.]";
+                 socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: reconnectPrompt }] }], turnComplete: true } }));
+              } else {
+                 let helloWord = targetLanguage === 'french' ? 'Bonjour' : (targetLanguage === 'english' ? 'Hello' : '¡Hola');
+                 const startPrompt = (hasCompletedFirstLesson || globalMemory) 
+                   ? `${helloWord} ! Я готов, давай продолжим урок.` 
+                   : `${helloWord} ! Я готов к первому уроку.`;
+                 socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: startPrompt }] }], turnComplete: true } }));
+              }
             }
           }, 800);
         };
@@ -342,7 +361,7 @@
           if (responseData.serverContent?.modelTurn) {
             for (const part of responseData.serverContent.modelTurn.parts) {
               if (part.inlineData?.mimeType.startsWith("audio/pcm")) {
-                if (!isUserInterrupting) {
+                if (!isUserInterrupting && !isReconnecting) {
                   playPcmChunk(part.inlineData.data); 
                   isBotSpeaking = true; 
                   orb.className = "orb speaking"; 
@@ -361,17 +380,29 @@
           }
         };
 
-        socket.onerror = () => { statusText.innerText = "Ошибка соединения. Проверьте ключ API."; finalizeStop(); };
+        socket.onerror = () => { 
+            if (!isClosingNormally && isSessionActive) {
+                socket.close(); 
+            }
+        };
         
         socket.onclose = () => { 
-          if(isSessionActive && !isExtractingMemory) {
-            if (!isClosingNormally) {
-              statusText.innerText = "Сеанс прерван (ошибка сети или таймаут).";
-            }
-            finalizeStop(); 
+          if(isSessionActive && !isClosingNormally && !isExtractingMemory) {
+             isReconnecting = true;
+             statusText.innerText = "Обрыв связи. Ожидание сети...";
+             stopBotSpeech();
+             setTimeout(() => connectWebSocket(true), 3000); 
+          } else if (isExtractingMemory) {
+             finalizeStop(); 
           }
         };
-      } catch (err) { statusText.innerText = "Не удалось подключиться."; finalizeStop(); }
+      } catch (err) { 
+          if(isSessionActive && !isClosingNormally) {
+             setTimeout(() => connectWebSocket(true), 3000);
+          } else {
+             finalizeStop();
+          }
+      }
     }
 
     function sendInitialSetup() {
@@ -425,7 +456,7 @@
       scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
       
       scriptProcessor.onaudioprocess = (e) => {
-        if (!isSessionActive || !socket || socket.readyState !== WebSocket.OPEN || isExtractingMemory) return;
+        if (!isSessionActive || !socket || socket.readyState !== WebSocket.OPEN || isExtractingMemory || isReconnecting) return;
         const inputData = e.inputBuffer.getChannelData(0);
         let sum = 0; for (let i = 0; i < inputData.length; i++) sum += inputData[i] * inputData[i];
         let rms = Math.sqrt(sum / inputData.length);
@@ -443,7 +474,6 @@
           isUserInterrupting = true; 
           stopBotSpeech(); 
           if (socket.readyState === WebSocket.OPEN) {
-             // ЗАМЕНЕН ПУСТОЙ МАССИВ: Теперь API не будет выбивать с ошибкой
              socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[Ученик перебил.]" }] }], turnComplete: true } }));
           }
         }
@@ -489,10 +519,18 @@
       if (extractionTimeout) clearTimeout(extractionTimeout);
       if (silenceInterval) clearInterval(silenceInterval); 
       
-      // ЖЕСТКИЙ СБРОС ВСЕХ СОСТОЯНИЙ ПРИ ЗАКРЫТИИ
+      activeAudioSources.forEach(source => { try { source.stop(); } catch(e) {} });
+      activeAudioSources = [];
+      isBotSpeaking = false;
+      if (playbackContext && playbackContext.state !== 'closed') {
+          playbackContext.close().catch(()=>{});
+          playbackContext = null;
+      }
+      
       isSessionActive = false;
       isExtractingMemory = false;
       isClosingNormally = false;
+      isReconnecting = false;
 
       btnAction.disabled = false; 
       btnAction.innerText = "Начать урок"; 
@@ -503,8 +541,10 @@
           statusText.innerText = "Урок и прогресс сохранены.";
       }
       
-      if (scriptProcessor) scriptProcessor.disconnect(); if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-      if (audioContext && audioContext.state !== 'closed') audioContext.close(); 
+      if (scriptProcessor) { scriptProcessor.disconnect(); scriptProcessor = null; }
+      if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+      if (audioContext && audioContext.state !== 'closed') { audioContext.close(); audioContext = null; }
+      
       if (socket && socket.readyState === WebSocket.OPEN) socket.close();
       
       localStorage.setItem(`learned_${targetLanguage}`, 'true'); 
