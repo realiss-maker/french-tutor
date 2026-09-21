@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Language Tutor</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0f172a">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80') no-repeat center center; background-size: cover; color: #f8fafc; display: flex; flex-direction: column; height: 100dvh; min-height: 100vh; overflow: hidden; }
@@ -24,7 +22,6 @@
     .btn-turn { background: #0284c7; color: white; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
     .btn-main:active { transform: scale(0.97); }
     .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
-    
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; padding: 20px; z-index: 50; }
     .modal-content { background: #1e293b; padding: 24px; border-radius: 16px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
     .modal-content input, .modal-content select { padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 0.95rem; width: 100%; }
@@ -58,10 +55,8 @@
   <div class="modal" id="modalSettings">
     <div class="modal-content">
       <h3 style="margin-bottom: 2px;">Настройки</h3>
-      
       <label>API Key Google:</label>
       <input type="password" id="inputApiKey" placeholder="AIzaSy...">
-      
       <div style="display: flex; gap: 10px;">
         <div style="flex: 1;">
           <label>Язык изучения:</label>
@@ -79,7 +74,6 @@
           </select>
         </div>
       </div>
-
       <button class="btn-save" id="btnSaveKey">Сохранить настройки</button>
       <button class="btn-reset-profile" id="btnResetMemory">Очистить память (Забыть всё)</button>
       <button class="btn-close" id="btnCloseModal">Закрыть</button>
@@ -87,14 +81,9 @@
   </div>
 
   <script>
-    if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.protocol === 'http:')) {
-      navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW не зарегистрирован:', err));
-    }
-
     let apiKey = localStorage.getItem('gemini_api_key') || '';
     let teacherGender = localStorage.getItem('teacher_gender') || 'female';
     let targetLanguage = localStorage.getItem('target_language') || 'french';
-    
     let globalMemory = localStorage.getItem('global_memory') || '';
     let langMemory = localStorage.getItem(`memory_${targetLanguage}`) || '';     
     let hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';
@@ -114,6 +103,7 @@
     const selectTeacher = document.getElementById('selectTeacher');
     const selectLanguage = document.getElementById('selectLanguage');
 
+    // ВОССТАНОВЛЕНО ВАШЕ ОПРЕДЕЛЕНИЕ ИМЕНИ
     function getTeacherName() {
       if (targetLanguage === 'french') return teacherGender === 'male' ? 'Лоран (Laurent)' : 'Камилла (Camille)';
       if (targetLanguage === 'english') return teacherGender === 'male' ? 'Артур (Arthur)' : 'Эмма (Emma)';
@@ -131,46 +121,27 @@
       if (targetLanguage === 'french') { shortName = teacherGender === 'male' ? 'Laurent' : 'Camille'; langLabel = 'Français'; }
       if (targetLanguage === 'english') { shortName = teacherGender === 'male' ? 'Arthur' : 'Emma'; langLabel = 'English'; }
       if (targetLanguage === 'spanish') { shortName = teacherGender === 'male' ? 'Diego' : 'Carmen'; langLabel = 'Español'; }
-      
       headerTitle.innerText = `${shortName} • ${langLabel}`;
     }
     updateUI();
 
     btnSettings.onclick = () => { 
-      inputApiKey.value = apiKey; 
-      selectTeacher.value = teacherGender; 
-      selectLanguage.value = targetLanguage;
+      inputApiKey.value = apiKey; selectTeacher.value = teacherGender; selectLanguage.value = targetLanguage;
       modalSettings.style.display = 'flex'; 
     };
-
     btnCloseModal.onclick = () => { modalSettings.style.display = 'none'; };
-    
     btnSaveKey.onclick = () => {
-      apiKey = inputApiKey.value.trim();
-      teacherGender = selectTeacher.value;
-      targetLanguage = selectLanguage.value;
-      
-      localStorage.setItem('gemini_api_key', apiKey);
-      localStorage.setItem('teacher_gender', teacherGender);
-      localStorage.setItem('target_language', targetLanguage);
-      
-      updateUI(); 
-      modalSettings.style.display = 'none'; 
-      alert('Настройки успешно сохранены!');
+      apiKey = inputApiKey.value.trim(); teacherGender = selectTeacher.value; targetLanguage = selectLanguage.value;
+      localStorage.setItem('gemini_api_key', apiKey); localStorage.setItem('teacher_gender', teacherGender); localStorage.setItem('target_language', targetLanguage);
+      updateUI(); modalSettings.style.display = 'none'; alert('Настройки сохранены!');
     };
-    
     btnResetMemory.onclick = () => {
-      localStorage.removeItem(`learned_${targetLanguage}`);        
-      localStorage.removeItem(`memory_${targetLanguage}`);
-      localStorage.removeItem('global_memory');
-      hasCompletedFirstLesson = false; 
-      globalMemory = ''; 
-      langMemory = '';
-      updateUI(); 
-      modalSettings.style.display = 'none';
-      alert('Память ИИ полностью очищена.');
+      localStorage.removeItem(`learned_${targetLanguage}`); localStorage.removeItem(`memory_${targetLanguage}`); localStorage.removeItem('global_memory');
+      hasCompletedFirstLesson = false; globalMemory = ''; langMemory = '';
+      updateUI(); modalSettings.style.display = 'none'; alert('Память очищена.');
     };
 
+    // ВОССТАНОВЛЕН ВАШ ОРИГИНАЛЬНЫЙ ПРОМПТ ЦЕЛИКОМ И ПОЛНОСТЬЮ
     function getSystemInstruction() {
       const tName = getTeacherName();
       const tRole = teacherGender === 'male' ? 'эмпатичный и теплый преподаватель' : 'эмпатичная и теплая преподавательница';
@@ -214,19 +185,84 @@
 3. ЗАВЕРШЕНИЕ УРОКА (ТЕСТ): Когда ученик просит завершить урок или время подходит к концу, ПЕРЕД ТЕМ как попрощаться, ОБЯЗАТЕЛЬНО задай 2 контрольных вопроса по материалу, который вы обсудили СЕГОДНЯ. Только после ответа ученика прощайся.`;
     }
 
-    let socket = null, audioContext = null, mediaStream = null, scriptProcessor = null;
-    let playbackContext = null, nextPlayTime = 0;
-    let isSessionActive = false, activeAudioSources = [], isBotSpeaking = false;
-    let isExtractingMemory = false, isUserInterrupting = false;
-    let isClosingNormally = false, isReconnecting = false;
-    let extractionTimeout = null;
-    let silenceInterval = null;
-    let lastActivityTime = Date.now();
+    // --- НОВАЯ СТАБИЛЬНАЯ АРХИТЕКТУРА WEBSOCKET И AUDIO ---
+    let socket = null, audioContext = null, mediaStream = null, audioWorkletNode = null;
+    let playbackContext = null;
+    let scheduledPlayTime = 0;
+    
+    let isSessionActive = false;
+    let isSetupComplete = false; 
+    let isBotSpeaking = false;
+    let isExtractingMemory = false;
+    let activeAudioSources = [];
+
+    const workletCode = `
+      class PCMProcessor extends AudioWorkletProcessor {
+        process(inputs, outputs, parameters) {
+          const input = inputs[0];
+          if (input && input.length > 0) {
+            const channelData = input[0];
+            const pcm16 = new Int16Array(channelData.length);
+            let sum = 0;
+            for (let i = 0; i < channelData.length; i++) {
+              let s = Math.max(-1, Math.min(1, channelData[i]));
+              pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+              sum += channelData[i] * channelData[i];
+            }
+            let rms = Math.sqrt(sum / channelData.length);
+            this.port.postMessage({ pcm: pcm16.buffer, rms: rms }, [pcm16.buffer]);
+          }
+          return true;
+        }
+      }
+      registerProcessor('pcm-processor', PCMProcessor);
+    `;
+
+    async function initMicrophone() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      mediaStream = await navigator.mediaDevices.getUserMedia({ 
+          audio: { channelCount: 1, sampleRate: 16000, echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
+      });
+      
+      const blob = new Blob([workletCode], { type: 'application/javascript' });
+      const workletUrl = URL.createObjectURL(blob);
+      await audioContext.audioWorklet.addModule(workletUrl);
+      
+      const source = audioContext.createMediaStreamSource(mediaStream);
+      audioWorkletNode = new AudioWorkletNode(audioContext, 'pcm-processor');
+      
+      audioWorkletNode.port.onmessage = (event) => {
+        if (!isSessionActive || !isSetupComplete || !socket || socket.readyState !== WebSocket.OPEN) return;
+        
+        const rms = event.data.rms;
+        if (!isBotSpeaking) {
+          if (rms > 0.015) { 
+            orb.style.transform = `scale(${1 + (rms * 2)})`; 
+            orb.style.boxShadow = `0 0 50px rgba(56, 189, 248, 0.8)`; 
+          } else { 
+            orb.style.transform = "scale(1)"; 
+            orb.style.boxShadow = `0 0 30px rgba(56, 189, 248, 0.4)`; 
+          }
+        }
+
+        const bytes = new Uint8Array(event.data.pcm);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        
+        if (!isExtractingMemory) {
+            socket.send(JSON.stringify({ realtimeInput: { mediaChunks: [{ mimeType: "audio/pcm;rate=16000", data: window.btoa(binary) }] } }));
+        }
+      };
+      
+      source.connect(audioWorkletNode);
+    }
 
     btnAction.onclick = () => { isSessionActive ? stopSession() : startSession(); };
-    
+
     btnEndTurn.onclick = () => {
-      if (socket && socket.readyState === WebSocket.OPEN && !isExtractingMemory && !isReconnecting) {
+      if (socket && socket.readyState === WebSocket.OPEN && isSetupComplete && !isExtractingMemory) {
         socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[Ученик закончил говорить. Жду твой ответ.]" }] }], turnComplete: true } }));
         stopBotSpeech(); 
         statusText.innerText = "Анализ ответа...";
@@ -237,329 +273,154 @@
       activeAudioSources.forEach(source => { try { source.stop(); } catch(e) {} });
       activeAudioSources = []; 
       isBotSpeaking = false; 
+      scheduledPlayTime = 0; 
       orb.className = "orb"; 
       orb.style.transform = "scale(1)";
-      if (isSessionActive && !isExtractingMemory && !isReconnecting) {
-          statusText.innerText = "Слушаю вас...";
-          lastActivityTime = Date.now();
-      }
     }
 
     async function startSession() {
       if (!apiKey) { modalSettings.style.display = 'flex'; return; }
       
       btnAction.disabled = true; 
-      activeAudioSources = []; 
-      isBotSpeaking = false; 
-      isExtractingMemory = false; 
-      isUserInterrupting = false;
-      isClosingNormally = false;
       isSessionActive = true;
-      isReconnecting = false;
-      lastActivityTime = Date.now();
+      isSetupComplete = false;
+      isExtractingMemory = false;
+      stopBotSpeech();
 
-      if (!playbackContext) {
-          playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-      }
-      if (playbackContext.state === 'suspended') {
-          playbackContext.resume();
-      }
+      if (!playbackContext) playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+      if (playbackContext.state === 'suspended') playbackContext.resume();
       
-      if (!mediaStream) {
-         await initMicrophone();
-      }
-
-      connectWebSocket(false);
+      if (!mediaStream) await initMicrophone();
+      connectWebSocket();
     }
 
-    function connectWebSocket(isReconnectAttempt) {
-      if (!isSessionActive) return;
-      isReconnecting = isReconnectAttempt;
-      statusText.innerText = isReconnectAttempt ? "Ожидание сети... Восстановление связи..." : "Подключение...";
+    function connectWebSocket() {
+      statusText.innerText = "Подключение...";
+      socket = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${apiKey}`);
+      
+      socket.onopen = () => {
+        const setupMessage = {
+          setup: {
+            model: "models/gemini-2.5-flash-native-audio-latest",
+            generationConfig: { 
+              responseModalities: ["AUDIO"], 
+              speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: teacherGender === 'male' ? "Puck" : "Aoede" } } } 
+            },
+            systemInstruction: { parts: [{ text: getSystemInstruction() }] },
+            tools: [{ functionDeclarations: [{ name: "saveStudentProfile", description: "Сохранить профиль ученика и его прогресс в память устройства.", parameters: { type: "OBJECT", properties: { global_memory: { type: "STRING", description: "Факты об ученике (имя, семья, профессия, хобби, город и т.д.). Обязательно сохрани старые факты и добавь новые." }, lang_memory: { type: "STRING", description: "Прогресс по языку: разобранные темы, ошибки, новые слова." } }, required: ["global_memory", "lang_memory"] } }] }]
+          }
+        };
+        socket.send(JSON.stringify(setupMessage));
+      };
 
-      try {
-        socket = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${apiKey}`);
+      socket.onmessage = async (event) => {
+        const responseData = event.data instanceof Blob ? JSON.parse(await event.data.text()) : JSON.parse(event.data);
         
-        socket.onopen = () => {
-          isReconnecting = false;
-          sendInitialSetup(); 
-          
-          btnAction.disabled = false; 
-          btnAction.innerText = "Завершить урок"; 
-          btnAction.className = "btn-main btn-stop";
-          btnEndTurn.style.display = "block"; 
+        if (responseData.setupComplete) {
+           isSetupComplete = true;
+           btnAction.disabled = false; 
+           btnAction.innerText = "Завершить урок"; 
+           btnAction.className = "btn-main btn-stop";
+           btnEndTurn.style.display = "block"; 
+           statusText.innerText = "Слушаю вас...";
+
+           let helloWord = targetLanguage === 'french' ? 'Bonjour' : (targetLanguage === 'english' ? 'Hello' : '¡Hola');
+           const startPrompt = (hasCompletedFirstLesson || globalMemory) ? `${helloWord} ! Я готов, давай продолжим урок.` : `${helloWord} ! Я готов к первому уроку.`;
+           
+           socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: startPrompt }] }], turnComplete: true } }));
+           return;
+        }
+
+        const functionCalls = responseData.toolCall?.functionCalls || (responseData.serverContent?.modelTurn?.parts ? responseData.serverContent.modelTurn.parts.filter(p => p.functionCall).map(p => p.functionCall) : null);
+        if (functionCalls && functionCalls.length > 0) {
+          functionCalls.forEach(call => {
+            if (call.name === "saveStudentProfile" && call.args) {
+              if (call.args.global_memory) { globalMemory = call.args.global_memory; localStorage.setItem('global_memory', globalMemory); }
+              if (call.args.lang_memory) { langMemory = call.args.lang_memory; localStorage.setItem(`memory_${targetLanguage}`, langMemory); }
+            }
+          });
+          if (isExtractingMemory) { finalizeStop(); return; }
+        }
+
+        if (isExtractingMemory && responseData.serverContent?.turnComplete) {
+          finalizeStop(); return; 
+        }
+
+        if (responseData.serverContent?.interrupted) {
+          stopBotSpeech();
           statusText.innerText = "Слушаю вас...";
-          lastActivityTime = Date.now();
-          
-          if(silenceInterval) clearInterval(silenceInterval);
-          silenceInterval = setInterval(() => {
-            if (isSessionActive && !isBotSpeaking && !isExtractingMemory && !isUserInterrupting && !isReconnecting) {
-              if (Date.now() - lastActivityTime > 15000) { 
-                if (socket && socket.readyState === WebSocket.OPEN) {
-                  socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[СИСТЕМНОЕ СООБЩЕНИЕ: Ученик долго молчит. Очень коротко и мягко спроси, здесь ли он и продолжаем ли мы урок.]" }] }], turnComplete: true } }));
-                  lastActivityTime = Date.now(); 
-                  statusText.innerText = "Репетитор проверяет связь...";
-                }
-              }
-            }
-          }, 1000);
+        }
 
-          setTimeout(() => {
-            if (socket.readyState === WebSocket.OPEN) {
-              if (isReconnectAttempt) {
-                 const reconnectPrompt = "[СИСТЕМНОЕ СООБЩЕНИЕ: Произошел технический обрыв интернета, но сейчас связь восстановлена! Урок НЕ закончен. Коротко и радостно скажи, что связь восстановилась, и мы можем продолжать с того же места.]";
-                 socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: reconnectPrompt }] }], turnComplete: true } }));
-              } else {
-                 let helloWord = targetLanguage === 'french' ? 'Bonjour' : (targetLanguage === 'english' ? 'Hello' : '¡Hola');
-                 const startPrompt = (hasCompletedFirstLesson || globalMemory) 
-                   ? `${helloWord} ! Я готов, давай продолжим урок.` 
-                   : `${helloWord} ! Я готов к первому уроку.`;
-                 socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: startPrompt }] }], turnComplete: true } }));
-              }
-            }
-          }, 800);
-        };
-
-        socket.onmessage = async (event) => {
-          let responseData = event.data instanceof Blob ? JSON.parse(await event.data.text()) : JSON.parse(event.data);
-          
-          const functionCalls = responseData.toolCall?.functionCalls || 
-            (responseData.serverContent?.modelTurn?.parts ? 
-             responseData.serverContent.modelTurn.parts.filter(p => p.functionCall).map(p => p.functionCall) : null);
-
-          if (functionCalls && functionCalls.length > 0) {
-            for (const call of functionCalls) {
-              if (call.name === "saveStudentProfile" && call.args) {
-                if (call.args.global_memory) {
-                  globalMemory = call.args.global_memory;
-                  localStorage.setItem('global_memory', globalMemory);
-                }
-                if (call.args.lang_memory) {
-                  langMemory = call.args.lang_memory;
-                  localStorage.setItem(`memory_${targetLanguage}`, langMemory);
-                }
-              }
-            }
-            if (isExtractingMemory) {
-              finalizeStop();
-              return;
-            }
-          }
-
-          if (isExtractingMemory) {
-            if (responseData.serverContent?.turnComplete) {
-              finalizeStop();
-            }
-            return; 
-          }
-
-          if (responseData.serverContent?.interrupted) {
-            isUserInterrupting = true; 
-            stopBotSpeech();
-          }
-
-          if (responseData.serverContent?.modelTurn) {
-            for (const part of responseData.serverContent.modelTurn.parts) {
-              if (part.inlineData?.mimeType.startsWith("audio/pcm")) {
-                if (!isUserInterrupting && !isReconnecting) {
-                  playPcmChunk(part.inlineData.data); 
-                  isBotSpeaking = true; 
-                  orb.className = "orb speaking"; 
-                  statusText.innerText = "Репетитор говорит...";
-                }
+        if (responseData.serverContent?.modelTurn) {
+          for (const part of responseData.serverContent.modelTurn.parts) {
+            if (part.inlineData?.mimeType.startsWith("audio/pcm")) {
+              playPcmChunk(part.inlineData.data); 
+              if (!isBotSpeaking) {
+                 isBotSpeaking = true; 
+                 orb.className = "orb speaking"; 
+                 statusText.innerText = "Репетитор говорит...";
               }
             }
           }
-          
-          if (responseData.serverContent?.turnComplete) { 
-            isBotSpeaking = false; 
-            isUserInterrupting = false; 
-            orb.className = "orb"; 
-            statusText.innerText = "Ваша очередь говорить..."; 
-            lastActivityTime = Date.now(); 
-          }
-        };
-
-        socket.onerror = () => { 
-            if (!isClosingNormally && isSessionActive) {
-                socket.close(); 
-            }
-        };
+        }
         
-        socket.onclose = () => { 
-          if(isSessionActive && !isClosingNormally && !isExtractingMemory) {
-             isReconnecting = true;
-             statusText.innerText = "Обрыв связи. Ожидание сети...";
-             stopBotSpeech();
-             setTimeout(() => connectWebSocket(true), 3000); 
-          } else if (isExtractingMemory) {
-             finalizeStop(); 
-          }
-        };
-      } catch (err) { 
-          if(isSessionActive && !isClosingNormally) {
-             setTimeout(() => connectWebSocket(true), 3000);
-          } else {
-             finalizeStop();
-          }
-      }
-    }
-
-    function sendInitialSetup() {
-      const setupMessage = {
-        setup: {
-          model: "models/gemini-2.5-flash-native-audio-latest",
-          generationConfig: { 
-            responseModalities: ["AUDIO"], 
-            speechConfig: { 
-              voiceConfig: { 
-                prebuiltVoiceConfig: { 
-                  voiceName: teacherGender === 'male' ? "Puck" : "Aoede" 
-                } 
-              } 
-            } 
-          },
-          systemInstruction: { parts: [{ text: getSystemInstruction() }] },
-          tools: [
-            {
-              functionDeclarations: [
-                {
-                  name: "saveStudentProfile",
-                  description: "Сохранить профиль ученика и его прогресс в память устройства.",
-                  parameters: {
-                    type: "OBJECT",
-                    properties: {
-                      global_memory: {
-                        type: "STRING",
-                        description: "Факты об ученике (имя, семья, профессия, хобби, город и т.д.). Обязательно сохрани старые факты и добавь новые."
-                      },
-                      lang_memory: {
-                        type: "STRING",
-                        description: "Прогресс по языку: разобранные темы, ошибки, новые слова."
-                      }
-                    },
-                    required: ["global_memory", "lang_memory"]
-                  }
-                }
-              ]
-            }
-          ]
+        if (responseData.serverContent?.turnComplete) { 
+          isBotSpeaking = false; 
+          orb.className = "orb"; 
+          statusText.innerText = "Ваша очередь говорить..."; 
         }
       };
-      socket.send(JSON.stringify(setupMessage));
-    }
 
-    async function initMicrophone() {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, sampleRate: 16000 } });
-      const source = audioContext.createMediaStreamSource(mediaStream);
-      scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
-      
-      scriptProcessor.onaudioprocess = (e) => {
-        if (!isSessionActive || !socket || socket.readyState !== WebSocket.OPEN || isExtractingMemory || isReconnecting) return;
-        const inputData = e.inputBuffer.getChannelData(0);
-        let sum = 0; for (let i = 0; i < inputData.length; i++) sum += inputData[i] * inputData[i];
-        let rms = Math.sqrt(sum / inputData.length);
-        
-        if (!isBotSpeaking) {
-          if (rms > 0.015) { 
-            lastActivityTime = Date.now(); 
-            orb.style.transform = `scale(${1 + (rms * 2)})`; 
-            orb.style.boxShadow = `0 0 50px rgba(56, 189, 248, 0.8)`; 
-          }
-          else { orb.style.transform = "scale(1)"; orb.style.boxShadow = `0 0 30px rgba(56, 189, 248, 0.4)`; }
-        }
-        
-        if (rms > 0.04 && isBotSpeaking) {
-          isUserInterrupting = true; 
-          stopBotSpeech(); 
-          if (socket.readyState === WebSocket.OPEN) {
-             socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[Ученик перебил.]" }] }], turnComplete: true } }));
-          }
-        }
-        
-        const output = new Int16Array(inputData.length);
-        for (let i = 0; i < inputData.length; i++) { const s = Math.max(-1, Math.min(1, inputData[i])); output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF; }
-        let binary = ''; const bytes = new Uint8Array(output.buffer);
-        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-        socket.send(JSON.stringify({ realtimeInput: { mediaChunks: [{ mimeType: "audio/pcm;rate=16000", data: window.btoa(binary) }] } }));
-      };
-      
-      source.connect(scriptProcessor); scriptProcessor.connect(audioContext.destination);
+      socket.onerror = () => { if (isSessionActive) finalizeStop(); };
+      socket.onclose = () => { if (isSessionActive) finalizeStop(); };
     }
 
     function stopSession() {
       if (!isSessionActive) return;
-      isSessionActive = false;
-      isClosingNormally = true; 
+      isExtractingMemory = true;
       stopBotSpeech(); 
       btnAction.disabled = true; 
       btnEndTurn.style.display = "none";
-      orb.className = "orb"; 
-      orb.style.transform = "scale(1)";
-      statusText.innerText = "Сохранение прогресса (закрываю урок)...";
+      statusText.innerText = "Сохранение прогресса...";
 
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        isExtractingMemory = true;
-        
+      if (socket && socket.readyState === WebSocket.OPEN && isSetupComplete) {
         const memoryPrompt = `[СИСТЕМНАЯ КОМАНДА: Урок завершен. Немедленно вызови функцию saveStudentProfile, чтобы сохранить в постоянную память профиль ученика и прогресс.
 СТАРАЯ БАЗА: ${globalMemory || 'пусто'}
 СТАРЫЙ ПРОГРЕСС: ${langMemory || 'пусто'}
 Объедини старые факты с новыми и вызови saveStudentProfile. Голосом ничего не произноси!]`;
-
         socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: memoryPrompt }] }], turnComplete: true } }));
-        
-        extractionTimeout = setTimeout(() => { finalizeStop(); }, 8000);
+        setTimeout(() => finalizeStop(), 8000); 
       } else {
         finalizeStop();
       }
     }
 
     function finalizeStop() {
-      if (extractionTimeout) clearTimeout(extractionTimeout);
-      if (silenceInterval) clearInterval(silenceInterval); 
-      
-      activeAudioSources.forEach(source => { try { source.stop(); } catch(e) {} });
-      activeAudioSources = [];
-      isBotSpeaking = false;
-      if (playbackContext && playbackContext.state !== 'closed') {
-          playbackContext.close().catch(()=>{});
-          playbackContext = null;
-      }
-      
+      stopBotSpeech();
       isSessionActive = false;
+      isSetupComplete = false;
       isExtractingMemory = false;
-      isClosingNormally = false;
-      isReconnecting = false;
 
       btnAction.disabled = false; 
       btnAction.innerText = "Начать урок"; 
       btnAction.className = "btn-main btn-start";
       btnEndTurn.style.display = "none"; 
+      statusText.innerText = "Урок и прогресс сохранены.";
       
-      if (statusText.innerText !== "Сеанс прерван (ошибка сети или таймаут).") {
-          statusText.innerText = "Урок и прогресс сохранены.";
+      if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.onclose = null; 
+          socket.close();
       }
-      
-      if (scriptProcessor) { scriptProcessor.disconnect(); scriptProcessor = null; }
-      if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
-      if (audioContext && audioContext.state !== 'closed') { audioContext.close(); audioContext = null; }
-      
-      if (socket && socket.readyState === WebSocket.OPEN) socket.close();
       
       localStorage.setItem(`learned_${targetLanguage}`, 'true'); 
       updateUI();
     }
 
     function playPcmChunk(base64Audio) {
-      if (!playbackContext) playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+      if (!playbackContext) return;
       
-      const currentTime = playbackContext.currentTime;
-      if (activeAudioSources.length === 0 && currentTime >= nextPlayTime) {
-          nextPlayTime = currentTime + 0.05; 
-      }
-      
-      const raw = window.atob(base64Audio); const bytes = new Uint8Array(raw.length);
+      const raw = window.atob(base64Audio); 
+      const bytes = new Uint8Array(raw.length);
       for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
       
       const int16Array = new Int16Array(bytes.buffer); 
@@ -573,15 +434,17 @@
       source.buffer = audioBuffer; 
       source.connect(playbackContext.destination);
       
-      if (nextPlayTime < currentTime) nextPlayTime = currentTime;
+      const currentTime = playbackContext.currentTime;
+      if (scheduledPlayTime < currentTime) {
+          scheduledPlayTime = currentTime + 0.03; 
+      }
       
-      source.start(nextPlayTime); 
-      nextPlayTime += audioBuffer.duration;
+      source.start(scheduledPlayTime); 
+      scheduledPlayTime += audioBuffer.duration;
+      
       activeAudioSources.push(source); 
-      
       source.onended = () => { 
         activeAudioSources = activeAudioSources.filter(s => s !== source); 
-        if (activeAudioSources.length === 0) isBotSpeaking = false; 
       };
     }
   </script>
