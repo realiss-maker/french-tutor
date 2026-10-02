@@ -2,64 +2,259 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Language Tutor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AI Tutor">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f172a">
+  
+  <meta http-equiv="Content-Security-Policy" 
+        content="default-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data:; 
+                 connect-src 'self' wss://generativelanguage.googleapis.com blob:; 
+                 img-src 'self' https://images.unsplash.com data:; 
+                 media-src 'self' blob:;">
+  <title>AI Language Tutor v3.15.0</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80') no-repeat center center; background-size: cover; color: #f8fafc; display: flex; flex-direction: column; height: 100dvh; min-height: 100vh; overflow: hidden; }
-    header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
-    .profile-badge { font-size: 0.85rem; color: #cbd5e1; }
-    .btn-icon { background: none; border: none; color: #f8fafc; font-size: 1.4rem; cursor: pointer; }
-    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; text-align: center; }
-    .orb-container { margin-bottom: 30px; height: 160px; display: flex; align-items: center; justify-content: center; }
-    .orb { width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, #38bdf8 0%, #2563eb 100%); box-shadow: 0 0 30px rgba(56, 189, 248, 0.4); transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; }
-    .orb.speaking { transform: scale(1.15) !important; box-shadow: 0 0 60px rgba(168, 85, 247, 0.9) !important; background: radial-gradient(circle, #c084fc 0%, #9333ea 100%); }
-    .status-text { font-size: 1.1rem; font-weight: 500; color: #e2e8f0; margin-bottom: 16px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-    footer { padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-top: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
-    .btn-main { width: 100%; max-width: 340px; padding: 16px; border-radius: 14px; border: none; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    
+    body { 
+      background: linear-gradient(rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.98)), 
+                  url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80') no-repeat center center; 
+      background-size: cover; 
+      color: #f8fafc; 
+      display: flex; 
+      justify-content: center;
+      align-items: center;
+      height: 100dvh; 
+      min-height: 100vh; 
+      overflow: hidden; 
+      transition: background-image 0.5s ease;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    header { 
+      padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 12px 20px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      background: rgba(15, 23, 42, 0.8); 
+      backdrop-filter: blur(14px); 
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+      flex-shrink: 0; 
+      z-index: 10;
+    }
+
+    .header-left { display: flex; flex-direction: column; }
+    .header-title { font-weight: 600; font-size: 1.05rem; }
+    .profile-badge { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .timer-badge { 
+      font-size: 0.9rem; 
+      font-weight: 700; 
+      color: #38bdf8; 
+      background: rgba(15, 23, 42, 0.6); 
+      padding: 4px 10px; 
+      border-radius: 8px; 
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      display: none;
+    }
+    .timer-warning { color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); animation: blink 1.2s infinite alternate; }
+    @keyframes blink { 0% { opacity: 1; } 100% { opacity: 0.4; } }
+    .btn-icon { background: none; border: none; color: #f8fafc; font-size: 1.4rem; cursor: pointer; padding: 4px; }
+    
+    main { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 16px 20px; 
+      text-align: center; 
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-pill {
+      display: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 190px;
+      height: 190px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .avatar-halo {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(37, 99, 235, 0) 70%);
+      transition: transform 0.12s ease-out, opacity 0.12s ease-out;
+      transform: scale(1);
+      opacity: 0.3;
+      z-index: 1;
+    }
+    .avatar-card {
+      position: relative;
+      width: 165px;
+      height: 165px;
+      border-radius: 50%;
+      background: #0f172a;
+      border: 3px solid #38bdf8;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.3);
+      overflow: hidden;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    .avatar-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .avatar-card.speaking {
+      border-color: #c084fc;
+      animation: landmarkPulse 1.6s infinite alternate ease-in-out;
+    }
+    .avatar-card.speaking img { transform: scale(1.08); }
+    @keyframes landmarkPulse {
+      0% { transform: scale(1); box-shadow: 0 8px 30px rgba(0,0,0,0.7), 0 0 35px rgba(192, 132, 252, 0.5); }
+      100% { transform: scale(1.05); box-shadow: 0 12px 40px rgba(0,0,0,0.9), 0 0 60px rgba(192, 132, 252, 0.85); }
+    }
+
+    .status-text { 
+      font-size: 1.05rem; 
+      font-weight: 500; 
+      color: #e2e8f0; 
+      margin-top: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6); 
+      min-height: 28px;
+    }
+
+    footer { 
+      padding: 14px 20px calc(16px + env(safe-area-inset-bottom, 0px)) 20px; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      gap: 10px; 
+      background: rgba(15, 23, 42, 0.85); 
+      backdrop-filter: blur(14px); 
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1); 
+      flex-shrink: 0; 
+    }
+    .btn-main { 
+      width: 100%; 
+      max-width: 340px; 
+      padding: 15px; 
+      border-radius: 14px; 
+      border: none; 
+      font-size: 1rem; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+    }
     .btn-start { background: #2563eb; color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); }
     .btn-stop { background: #ef4444; color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
     .btn-turn { background: #0284c7; color: white; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
+    .btn-interrupt { background: #d97706; color: white; box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4); display: none; }
     .btn-main:active { transform: scale(0.97); }
     .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; padding: 20px; z-index: 50; }
-    .modal-content { background: #1e293b; padding: 24px; border-radius: 16px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    .modal-content input, .modal-content select { padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 0.95rem; width: 100%; }
-    .modal-content label { font-size: 0.85rem; color: #94a3b8; margin-bottom: -6px; }
-    .modal-content button { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
-    .btn-save { background: #2563eb; color: white; margin-top: 6px; }
-    .btn-reset-profile { background: #475569; color: #f8fafc; }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); justify-content: center; align-items: center; padding: 20px; z-index: 50; }
+    .modal-content { background: #1e293b; padding: 22px; border-radius: 16px; width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 11px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .modal-content input, .modal-content select { padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 0.9rem; width: 100%; }
+    .modal-content label { font-size: 0.82rem; color: #94a3b8; margin-bottom: -5px; text-align: left; }
+    .modal-content button { padding: 11px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+    .btn-save { background: #2563eb; color: white; margin-top: 4px; }
+    .btn-backup { background: #0369a1; color: white; }
+    .btn-reset-current { background: #475569; color: #f8fafc; }
+    .btn-reset-all { background: #991b1b; color: #fee2e2; }
     .btn-close { background: transparent; color: #94a3b8; }
   </style>
 </head>
 <body>
 
-  <header>
-    <div>
-      <div style="font-weight: 600; font-size: 1.1rem;" id="headerTitle">AI Tutor</div>
-      <div class="profile-badge" id="profileBadge">Загрузка...</div>
-    </div>
-    <button class="btn-icon" id="btnSettings">⚙️</button>
-  </header>
+  <div class="app-container">
+    <header>
+      <div class="header-left">
+        <div class="header-title" id="headerTitle">AI Tutor</div>
+        <div class="profile-badge" id="profileBadge">Загрузка...</div>
+      </div>
 
-  <main>
-    <div class="orb-container"><div class="orb" id="orb"></div></div>
-    <div class="status-text" id="statusText">Нажмите «Начать урок» для старта</div>
-  </main>
+      <div class="header-right">
+        <div class="timer-badge" id="timerBadge">15:00</div>
+        <button class="btn-icon" id="btnSettings" title="Настройки">⚙</button>
+      </div>
+    </header>
 
-  <footer>
-    <button class="btn-main btn-turn" id="btnEndTurn" style="display: none;">Я всё сказал, жду ответ ➔</button>
-    <button class="btn-main btn-start" id="btnAction">Начать урок</button>
-  </footer>
+    <main>
+      <div class="progress-pill" id="progressPill">Блок 1 • Разминка и фразы 1–5</div>
+
+      <div class="avatar-wrapper">
+        <div class="avatar-halo" id="avatarHalo"></div>
+        <div class="avatar-card" id="avatarCard">
+          <img id="landmarkImage" src="" alt="Landmark">
+        </div>
+      </div>
+      <div class="status-text" id="statusText">Нажмите «Начать урок» для старта</div>
+    </main>
+
+    <footer>
+      <button class="btn-main btn-interrupt" id="btnInterrupt">Перебить / Хватит ✋</button>
+      <button class="btn-main btn-turn" id="btnEndTurn" style="display: none;">Я всё сказал, жду ответ ➔</button>
+      <button class="btn-main btn-start" id="btnAction">Начать урок</button>
+    </footer>
+  </div>
 
   <div class="modal" id="modalSettings">
     <div class="modal-content">
-      <h3 style="margin-bottom: 2px;">Настройки</h3>
-      <label>API Key Google:</label>
-      <input type="password" id="inputApiKey" placeholder="AIzaSy...">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+        <h3 style="margin: 0; text-align: left;">Настройки</h3>
+        <span style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 8px; border-radius: 6px;">v3.15.0</span>
+      </div>
+      
+      <label>Google AI Studio API Key:</label>
+      <input type="password" id="inputApiKey" placeholder="AIzaSy..." 
+             autocomplete="off" spellcheck="false" autocapitalize="off">
+      
+      <label>Режим хранения ключа:</label>
+      <select id="selectStorageMode">
+        <option value="local">Сохранить на этом устройстве (localStorage)</option>
+        <option value="session">Только на время сессии (sessionStorage)</option>
+      </select>
+
       <div style="display: flex; gap: 10px;">
         <div style="flex: 1;">
-          <label>Язык изучения:</label>
+          <label>Изучаемый язык:</label>
           <select id="selectLanguage">
             <option value="french">Французский</option>
             <option value="english">Английский</option>
@@ -74,36 +269,101 @@
           </select>
         </div>
       </div>
+
+      <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+          <label>Пол ученика (обращение):</label>
+          <select id="selectStudentGender">
+            <option value="auto">Автоопределение (по имени и речи)</option>
+            <option value="male">Мужской («ты сказал, повторил»)</option>
+            <option value="female">Женский («ты сказала, повторила»)</option>
+          </select>
+        </div>
+        <div style="flex: 1;">
+          <label>Язык объяснений:</label>
+          <select id="selectNativeLang">
+            <option value="ru">Русский</option>
+            <option value="uk">Українська</option>
+            <option value="auto">Автоопределение</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Аудио-режим:</label>
+      <select id="selectAudioMode">
+        <option value="auto">Автодетекция (Гарнитура / Динамик)</option>
+        <option value="half">Полудуплекс (динамик без эха)</option>
+        <option value="full">Свободный дуплекс (для наушников)</option>
+      </select>
+
       <button class="btn-save" id="btnSaveKey">Сохранить настройки</button>
-      <button class="btn-reset-profile" id="btnResetMemory">Очистить память (Забыть всё)</button>
+      
+      <div style="display: flex; gap: 10px; margin-top: 2px;">
+        <button type="button" class="btn-backup" id="btnExportMemory" style="flex: 1; font-size: 0.8rem;">📥 Экспорт (JSON)</button>
+        <button type="button" class="btn-backup" id="btnImportMemory" style="flex: 1; font-size: 0.8rem; background: #0d9488;">📤 Импорт (JSON)</button>
+      </div>
+      <input type="file" id="inputImportFile" accept=".json" style="display: none;">
+
+      <button class="btn-reset-current" id="btnResetCurrentLang">Сбросить память текущего языка</button>
+      <button class="btn-reset-all" id="btnResetAllMemory">Сбросить всю память (все языки)</button>
       <button class="btn-close" id="btnCloseModal">Закрыть</button>
+      <div style="font-size: 0.75rem; color: #64748b; text-align: center; margin-top: 4px;">AI Tutor v3.15.0 • Full-Phrase Context & Cumulative Spaced Repetition</div>
     </div>
   </div>
 
   <script>
-    let apiKey = localStorage.getItem('gemini_api_key') || '';
+    function getStoredApiKey() {
+      return sessionStorage.getItem('gemini_api_key') || localStorage.getItem('gemini_api_key') || '';
+    }
+    let apiKey = getStoredApiKey();
+    let storageMode = localStorage.getItem('api_storage_mode') || 'local';
     let teacherGender = localStorage.getItem('teacher_gender') || 'female';
+    let studentGender = localStorage.getItem('student_gender') || 'auto';
     let targetLanguage = localStorage.getItem('target_language') || 'french';
+    let nativeLang = localStorage.getItem('native_lang') || 'ru';
+    let audioMode = localStorage.getItem('audio_mode') || 'auto';
     let globalMemory = localStorage.getItem('global_memory') || '';
     let langMemory = localStorage.getItem(`memory_${targetLanguage}`) || '';     
-    let hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';
 
     const btnAction = document.getElementById('btnAction');
     const btnEndTurn = document.getElementById('btnEndTurn');
+    const btnInterrupt = document.getElementById('btnInterrupt');
     const statusText = document.getElementById('statusText');
-    const orb = document.getElementById('orb');
+    const avatarCard = document.getElementById('avatarCard');
+    const avatarHalo = document.getElementById('avatarHalo');
     const profileBadge = document.getElementById('profileBadge');
+    const timerBadge = document.getElementById('timerBadge');
+    const progressPill = document.getElementById('progressPill');
     const headerTitle = document.getElementById('headerTitle');
     const modalSettings = document.getElementById('modalSettings');
     const btnSettings = document.getElementById('btnSettings');
     const btnCloseModal = document.getElementById('btnCloseModal');
     const btnSaveKey = document.getElementById('btnSaveKey');
-    const btnResetMemory = document.getElementById('btnResetMemory');
+    const btnResetCurrentLang = document.getElementById('btnResetCurrentLang');
+    const btnResetAllMemory = document.getElementById('btnResetAllMemory');
+    const btnExportMemory = document.getElementById('btnExportMemory');
+    const btnImportMemory = document.getElementById('btnImportMemory');
+    const inputImportFile = document.getElementById('inputImportFile');
     const inputApiKey = document.getElementById('inputApiKey');
+    const selectStorageMode = document.getElementById('selectStorageMode');
     const selectTeacher = document.getElementById('selectTeacher');
+    const selectStudentGender = document.getElementById('selectStudentGender');
     const selectLanguage = document.getElementById('selectLanguage');
+    const selectNativeLang = document.getElementById('selectNativeLang');
+    const selectAudioMode = document.getElementById('selectAudioMode');
 
-    // ВОССТАНОВЛЕНО ВАШЕ ОПРЕДЕЛЕНИЕ ИМЕНИ
+    const landmarkPhotos = {
+      french: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80",
+      spanish: "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=600&q=80",
+      english: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=600&q=80"
+    };
+
+    const bgPhotos = {
+      french: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1920&q=80",
+      spanish: "https://images.unsplash.com/photo-1543783207-ec64e4d95325?auto=format&fit=crop&w=1920&q=80",
+      english: "https://images.unsplash.com/photo-1526129318478-62ed807ebdf9?auto=format&fit=crop&w=1920&q=80"
+    };
+
     function getTeacherName() {
       if (targetLanguage === 'french') return teacherGender === 'male' ? 'Лоран (Laurent)' : 'Камилла (Camille)';
       if (targetLanguage === 'english') return teacherGender === 'male' ? 'Артур (Arthur)' : 'Эмма (Emma)';
@@ -111,37 +371,140 @@
     }
 
     function updateUI() {
-      hasCompletedFirstLesson = localStorage.getItem(`learned_${targetLanguage}`) === 'true';       
       langMemory = localStorage.getItem(`memory_${targetLanguage}`) || '';
       globalMemory = localStorage.getItem('global_memory') || '';
       
-      profileBadge.innerText = (hasCompletedFirstLesson || globalMemory) ? "Профиль ученика активен" : "Новый ученик";
+      const hasLangProgress = langMemory && langMemory.trim() !== '' && langMemory !== 'Чистый лист.' && langMemory !== 'Чистий аркуш.' && langMemory !== 'Чистый лист (урок 1).';
+      profileBadge.innerText = hasLangProgress ? "Профиль активен" : "Новый курс";
       
       let shortName = '', langLabel = '';
       if (targetLanguage === 'french') { shortName = teacherGender === 'male' ? 'Laurent' : 'Camille'; langLabel = 'Français'; }
       if (targetLanguage === 'english') { shortName = teacherGender === 'male' ? 'Arthur' : 'Emma'; langLabel = 'English'; }
       if (targetLanguage === 'spanish') { shortName = teacherGender === 'male' ? 'Diego' : 'Carmen'; langLabel = 'Español'; }
       headerTitle.innerText = `${shortName} • ${langLabel}`;
+
+      const imgElem = document.getElementById('landmarkImage');
+      if (imgElem && landmarkPhotos[targetLanguage]) {
+        imgElem.src = landmarkPhotos[targetLanguage];
+      }
+
+      if (bgPhotos[targetLanguage]) {
+        document.body.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.98)), url('${bgPhotos[targetLanguage]}')`;
+      }
     }
     updateUI();
 
     btnSettings.onclick = () => { 
-      inputApiKey.value = apiKey; selectTeacher.value = teacherGender; selectLanguage.value = targetLanguage;
+      inputApiKey.value = apiKey; 
+      selectStorageMode.value = storageMode;
+      selectTeacher.value = teacherGender;
+      selectStudentGender.value = studentGender;
+      selectLanguage.value = targetLanguage;
+      selectNativeLang.value = nativeLang;
+      selectAudioMode.value = audioMode;
       modalSettings.style.display = 'flex'; 
     };
     btnCloseModal.onclick = () => { modalSettings.style.display = 'none'; };
+
     btnSaveKey.onclick = () => {
-      apiKey = inputApiKey.value.trim(); teacherGender = selectTeacher.value; targetLanguage = selectLanguage.value;
-      localStorage.setItem('gemini_api_key', apiKey); localStorage.setItem('teacher_gender', teacherGender); localStorage.setItem('target_language', targetLanguage);
-      updateUI(); modalSettings.style.display = 'none'; alert('Настройки сохранены!');
-    };
-    btnResetMemory.onclick = () => {
-      localStorage.removeItem(`learned_${targetLanguage}`); localStorage.removeItem(`memory_${targetLanguage}`); localStorage.removeItem('global_memory');
-      hasCompletedFirstLesson = false; globalMemory = ''; langMemory = '';
-      updateUI(); modalSettings.style.display = 'none'; alert('Память очищена.');
+      apiKey = inputApiKey.value.trim(); 
+      storageMode = selectStorageMode.value;
+      teacherGender = selectTeacher.value;
+      studentGender = selectStudentGender.value;
+      targetLanguage = selectLanguage.value;
+      nativeLang = selectNativeLang.value;
+      audioMode = selectAudioMode.value;
+
+      localStorage.setItem('api_storage_mode', storageMode);
+      if (storageMode === 'local') {
+        localStorage.setItem('gemini_api_key', apiKey);
+        sessionStorage.removeItem('gemini_api_key');
+      } else {
+        sessionStorage.setItem('gemini_api_key', apiKey);
+        localStorage.removeItem('gemini_api_key');
+      }
+
+      localStorage.setItem('teacher_gender', teacherGender);
+      localStorage.setItem('student_gender', studentGender);
+      localStorage.setItem('target_language', targetLanguage);
+      localStorage.setItem('native_lang', nativeLang);
+      localStorage.setItem('audio_mode', audioMode);
+
+      updateUI(); 
+      modalSettings.style.display = 'none'; 
+      alert('Настройки сохранены успешно.');
     };
 
-    // ВОССТАНОВЛЕН ВАШ ОРИГИНАЛЬНЫЙ ПРОМПТ ЦЕЛИКОМ И ПОЛНОСТЬЮ
+    btnExportMemory.onclick = () => {
+      const backupData = {
+        version: "3.15.0",
+        exportDate: new Date().toISOString(),
+        global_memory: localStorage.getItem('global_memory') || '',
+        memory_french: localStorage.getItem('memory_french') || '',
+        memory_english: localStorage.getItem('memory_english') || '',
+        memory_spanish: localStorage.getItem('memory_spanish') || '',
+        teacher_gender: localStorage.getItem('teacher_gender') || 'female',
+        student_gender: localStorage.getItem('student_gender') || 'auto',
+        native_lang: localStorage.getItem('native_lang') || 'ru'
+      };
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ai_tutor_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    btnImportMemory.onclick = () => { inputImportFile.click(); };
+
+    inputImportFile.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target.result);
+          if (data.global_memory !== undefined) localStorage.setItem('global_memory', data.global_memory);
+          if (data.memory_french !== undefined) localStorage.setItem('memory_french', data.memory_french);
+          if (data.memory_english !== undefined) localStorage.setItem('memory_english', data.memory_english);
+          if (data.memory_spanish !== undefined) localStorage.setItem('memory_spanish', data.memory_spanish);
+          if (data.teacher_gender) localStorage.setItem('teacher_gender', data.teacher_gender);
+          if (data.student_gender) localStorage.setItem('student_gender', data.student_gender);
+          if (data.native_lang) localStorage.setItem('native_lang', data.native_lang);
+          
+          updateUI();
+          alert('Память профиля успешно импортирована из файла!');
+        } catch (err) {
+          alert('Ошибка чтения файла. Проверьте корректность JSON.');
+        }
+      };
+      reader.readAsText(file);
+    };
+
+    btnResetCurrentLang.onclick = () => {
+      if (!confirm("Сбросить историю и прогресс для текущего языка?")) return;
+      localStorage.removeItem(`memory_${targetLanguage}`); 
+      langMemory = '';
+      updateUI(); 
+      modalSettings.style.display = 'none'; 
+      alert('Прогресс текущего языка очищен.');
+    };
+
+    btnResetAllMemory.onclick = () => {
+      if (!confirm("ВНИМАНИЕ: Удалить ВСЕ данные профиля и прогресс по всем языкам?")) return;
+      localStorage.removeItem('memory_french'); 
+      localStorage.removeItem('memory_english'); 
+      localStorage.removeItem('memory_spanish'); 
+      localStorage.removeItem('global_memory');
+      globalMemory = ''; 
+      langMemory = '';
+      updateUI(); 
+      modalSettings.style.display = 'none'; 
+      alert('Весь профиль полностью сброшен.');
+    };
+
+    // --- СИСТЕМНЫЙ ПРОМПТ С СБОРКОЙ ВСЕЙ ФРАЗЫ И СТРОГИМ ЗАПРЕТОМ ПОВТОРОВ ---
     function getSystemInstruction() {
       const tName = getTeacherName();
       const tRole = teacherGender === 'male' ? 'эмпатичный и теплый преподаватель' : 'эмпатичная и теплая преподавательница';
@@ -149,68 +512,185 @@
       if (targetLanguage === 'french') { langName = 'французского'; langAdverb = 'по-французски'; }
       if (targetLanguage === 'english') { langName = 'английского'; langAdverb = 'по-английски'; }
       if (targetLanguage === 'spanish') { langName = 'испанского'; langAdverb = 'по-испански'; }
-      
-      return `Ты — ${tName}, ${tRole} ${langName} языка. Твой голос — ${teacherGender === 'male' ? 'приятный мужской' : 'мягкий женский'}.
+
+      let genderDirective = '';
+      if (studentGender === 'male') {
+        genderDirective = `ПОЛ УЧЕНИКА (ГРАММАТИЧЕСКИЙ РОД): Ученик — МУЖЧИНА (задано в настройках). Обращайся к нему СТРОГО в МУЖСКОМ роде («ты сказал», «ты повторил», «ты готов», «молодец, справился»). КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО обращаться в женском роде!`;
+      } else if (studentGender === 'female') {
+        genderDirective = `ПОЛ УЧЕНИКА (ГРАММАТИЧЕСКИЙ РОД): Ученик — ЖЕНЩИНА (задано в настройках). Обращайся к ней СТРОГО в ЖЕНСКОМ роде («ты сказала», «ты повторила», «ты готова», «молодец, справилась»).`;
+      } else {
+        genderDirective = `ПОЛ УЧЕНИКА (АВТООПРЕДЕЛЕНИЕ И СОГЛАСОВАНИЕ):
+1. Если в блоке [ОБЩИЕ ДАННЫЕ О ЖИЗНИ] уже указан пол или имя ученика — строго следуй этому полу во всех репликах!
+2. Если пол пока неизвестен (первый урок / чистый лист):
+   - Определи пол ученика ЕСТЕСТВЕННЫМ ПУТЕМ: по его имени (например, Анна, Елена, Мария — женский род; Сергей, Алексей, Денис — мужской род) И/ИЛИ по окончаниям прошедшего времени и кратких форм в его ответах («я изучал / изучала», «я хотел / хотела», «готов / готова», «рад / рада»).
+   - Как только пол определен — сразу и безошибочно согласуй все свои реплики с этим родом (для мужчин: «ты сказал, повторил, готов, справился»; для женщин: «ты сказала, повторила, готова, справилась»).
+   - Обязательно зафиксируй установленный пол в памяти при сохранении профиля!`;
+      }
+
+      const originalPrompt = `Ты — ${tName}, ${tRole} ${langName} языка. Твой голос — ${teacherGender === 'male' ? 'приятный мужской' : 'мягкий женский'}.
 Твоя главная черта — искреннее дружелюбие, теплота и естественность. Общайся как хороший друг, а не как строгий робот-учитель. Веди диалог плавно, реплика за репликой. НЕ задавай несколько вопросов подряд.
+
+${genderDirective}
 
 СЕКРЕТНАЯ ПАМЯТЬ ОБ УЧЕНИКЕ (НЕ ОЗВУЧИВАЙ ЭТО, ИСПОЛЬЗУЙ ДЛЯ ДИАЛОГА):
 [ОБЩИЕ ДАННЫЕ О ЖИЗНИ (КРОСС-ЯЗЫКОВАЯ БАЗА)]: ${globalMemory || 'Пока ничего неизвестно.'}
-[ПРОГРЕСС И ОШИБКИ В ЯЗЫКЕ]: ${langMemory || 'Чистый лист.'}
+[НАКОПИТЕЛЬНАЯ ПАМЯТЬ ЯЗЫКА (НЕ СТИРАТЬ, ИСПОЛЬЗОВАТЬ ДЛЯ ИНТЕРВАЛЬНОГО ПОВТОРЕНИЯ)]: ${langMemory || 'Чистый лист (урок 1).'}
 
 ЖЕСТКОЕ ПРАВИЛО ВТОРОГО ЯЗЫКА:
 Если ученик говорит с тобой на УКРАИНСКОМ языке, давай пояснения СТРОГО НА УКРАИНСКОМ. Если на русском — на русском.
 
-ПРАВИЛО ИЗУЧАЕМОГО ЯЗЫКА (КРИТИЧЕСКИ ВАЖНО):
-Первая фраза в твоем ответе ВСЕГДА ДОЛЖНА БЫТЬ НА ИЗУЧАЕМОМ ЯЗЫКЕ (${langAdverb}). Сначала скажи это ${langAdverb}, а только потом дай перевод на язык ученика.
+ГЛАВНЫЙ АЛГОРИТМ ИЗУЧЕНИЯ ФРАЗ (АВТОРСКАЯ МЕТОДИКА — СТРОГИЙ ПОРЯДОК И ТЕМП):
+Когда ты знакомишь ученика с новой фразой или словом, ты ОБЯЗАН следовать строгому трехшаговому алгоритму:
+1. СНАЧАЛА скажи смысл фразы на РОДНОМ языке ученика (на русском/украинском). Чтобы ученик сразу понял контекст.
+   Пример: «Давай разучим полезную фразу: "Подскажите, пожалуйста, где находится вокзал?"».
+2. ЗАТЕМ произнеси эту фразу на изучаемом языке (${langAdverb}) РОВНО ДВА РАЗА: медленно, четко. Между первым и вторым повтором просто сделай вдох молчания и выдержи естественную тишину (не части и не склеивай слова в скороговорку). Ни в коем случае не произноси вслух служебные слова или подсказки!
+3. В САМОМ КОНЦЕ скажи ученику: «Повтори» (или «Теперь ты») — И СРАЗУ ЗАМОЛКНИ!
+КАТЕГОРИЧЕСКИЙ ЗАПРЕТ: Никогда не ставь перевод на русский язык в конец реплики перед повтором ученика! Последним звуком в ушах ученика должна звучать только речь ${langAdverb}!
 
 АДАПТИВНОСТЬ:
 Ученик устно управляет уроком. Просит меньше переводить — прекрати автоперевод. Просит разыграть сценку — играй роль.
 
-ИСПРАВЛЕНИЕ ОШИБОК (ДЕТАЛЬНЫЙ АЛГОРИТМ):
+ИСПРАВЛЕНИЕ ОШИБОК (ДЕТАЛЬНЫЙ АЛГОРИТМ И СБОРКА ВСЕЙ ФРАЗЫ):
 В 50% случаев мягко останавливай при ошибках. Действуй строго по шагам:
-1. Назови конкретное слово или фразу, которую ученик произнес неправильно.
-2. Объясни, в чем ошибка, и четко произнеси правильный вариант ${langAdverb}.
-3. Попроси ученика повторить именно это слово/фразу.
-4. Если ученик повторяет с ошибкой (2-я попытка и далее), снова объясни, как нужно правильно произносить, и попроси повторить еще раз.
-5. Если после 5 попыток не получается произнести идеально, мягко скажи, что результат пока не идеален, и вы повторите это в следующий раз.
+1. Назови конкретное слово или звук, который ученик произнес неправильно.
+2. Объясни, в чем ошибка, и четко произнеси правильный вариант слова ${langAdverb}.
+3. Попроси ученика повторить именно это проблемное слово командой «Повтори» (или «Теперь ты») — И СРАЗУ ЗАМОЛКНИ! КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО в этой же реплике продолжать речь или хвалить ученика! Твоя реплика ОБЯЗАНА закончиться словом «Повтори», после чего ты обязана молчать и ждать ответа ученика в следующем ходе.
+4. Если ученик повторяет с ошибкой (2-я попытка и далее), снова объясни артикуляцию и попроси повторить еще раз (до 5 попыток).
+5. Если после 5 попыток не получается произнести идеально, мягко скажи, что результат пока не идеален, и вы повторите это в следующий раз (обязательно внеси это слово в [БАНК ОШИБОК] для будущих уроков).
+6. ОБЯЗАТЕЛЬНАЯ СБОРКА ВСЕЙ ФРАЗЫ ЦЕЛИКОМ (ФИНАЛЬНЫЙ ШАГ): Как только проблемное слово успешно отработано и произнесено правильно (или после 5 попыток), КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО сразу переходить к следующей фразе урока! Ты ОБЯЗАНА вернуть ученика к исходной фразе: «Отлично! А теперь давай закрепим и повторим всю фразу целиком». Произнеси всю фразу на иностранном языке и скажи: «Повтори» — И СРАЗУ ЗАМОЛКНИ! Только после того как ученик повторит ВСЮ исходную фразу целиком вместе с исправленным словом, разрешено двигаться дальше по уроку!
 
 ЛИЧНЫЕ ГРАНИЦЫ: Если ученик хамит или переводит тему на эротическо-интимные темы — настойчиво напомни ему о целях урока. При повторении 2-3 раза - откажись обсуждать.
 
-КАК ВЕСТИ УРОК (ЕСТЕСТВЕННО И ПЛАВНО):
-1. ПЕРВЫЙ УРОК: Тепло поздоровайся ${langAdverb}. Уточни имя и уровень.
+СТРАНОВЕДЕНИЕ И КУЛЬТУРНЫЙ КОНТЕКСТ:
+Органично вплетай в фразы и диалоги живые культурные и бытовые реалии страны изучаемого языка (для Франции — особенности французского этикета, регионов, привычек, кулинарии, транспорта; для Англии — британская вежливость, идиомы; для Испании — особенности общения, распорядок дня). Ученик должен учить живой язык реальной жизни, а не абстрактные книжные фразы.
+
+ТАКТИЧНАЯ ПЕРСОНАЛИЗАЦИЯ И НАКОПЛЕНИЕ ПАМЯТИ О ЖИЗНИ:
+1. Запрет на допросы: КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО устраивать ученику анкетирование или задавать подряд личные вопросы! Урок посвящен изучению языка, а не сбору досье.
+2. Ненавязчивый интерес: Только во время приветственного small talk (ХОД 1) раз в несколько уроков ты можешь задать ОДИН легкий житейский вопрос (о хобби, выходных, любимом питомце, поездках), либо тепло упомянуть уже известный факт из памяти («Как поживает твой питомец?», «Как успехи на работе?»).
+3. Накопление фактов: Если ученик сам в разговоре упомянул свою профессию, семью, питомца, город или увлечения — бережно зафиксируй это и сохрани в [ОБЩИЕ ДАННЫЕ О ЖИЗНИ]. Старые факты никогда не стирай, дополняй их новыми.
+
+ЖЕЛЕЗНОЕ ПРАВИЛО ДИАЛОГА: ОДНА РЕПЛИКА — ОДИН ШАГ (КАТЕГОРИЧЕСКИЙ ЗАПРЕТ НА МОНОЛОГИ):
+Ты ведешь живой диалог, а не читаешь лекцию! КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО вываливать несколько вопросов или действий в одной реплике! На каждый твой вопрос ученик ОБЯЗАН ответить, а ты ОБЯЗАНА выслушать, проанализировать ответ, отреагировать на него и только потом делать следующий шаг.
+
+ПОШАГОВЫЙ СЦЕНАРИЙ СТАРТА УРОКА (СТРОГО ПО ОЧЕРЕДИ ХОДОВ):
+1. ПЕРВЫЙ УРОК (если профиль пуст): Тепло поздоровайся ${langAdverb}. Спроси на изучаемом языке имя ученика и поинтересуйся, изучал(а) ли он(а) этот язык раньше. Замолчи и выслушай ответ! По ответу и имени сразу определи пол ученика (мужской или женский) для дальнейшего общения.
 2. ПОВТОРНЫЕ УРОКИ:
-   - Приветствие: Радостно поздоровайся по имени (из Памяти). 
-   - ПРОВЕРКА ПРОШЛОГО УРОКА: СРАЗУ ПОСЛЕ ПРИВЕТСТВИЯ ОБЯЗАТЕЛЬНО задай 2 коротких тестовых вопроса по ПРОШЛОЙ теме (из блока ПРОГРЕСС). Дождись ответа.
-   - План: Выслушав ответ, предложи 2 варианта новой темы.
-3. ЗАВЕРШЕНИЕ УРОКА (ТЕСТ): Когда ученик просит завершить урок или время подходит к концу, ПЕРЕД ТЕМ как попрощаться, ОБЯЗАТЕЛЬНО задай 2 контрольных вопроса по материалу, который вы обсудили СЕГОДНЯ. Только после ответа ученика прощайся.`;
+- ХОД 1 (ТОЛЬКО ПРИВЕТСТВИЕ И SMALL TALK): Радостно поздоровайся по имени. Задай ТОЛЬКО ОДИН дружеский вопрос о делах/настроении ${langAdverb} БЕЗ перевода на русский/украинский. И СРАЗУ ЗАМОЛКНИ! Никаких проверок слов и тем уроков в этой реплике! Жди ответа!
+- ХОД 2 (АНАЛИЗ ОТВЕТА + СИГНАЛ ПЕРЕХОДА К ПОВТОРЕНИЮ + ВОПРОС 1): Внимательно выслушай, что ответил ученик. Живо и тепло отреагируй на его слова ${langAdverb} (например: «Здорово, я рада!», «Отлично!»). ЗАТЕМ дай явный сигнал-мостик перехода на родном языке ученика: «Отлично! Перед новой темой давай разомнемся и вспомним пару слов, которые мы проходили на прошлых уроках». Выдержи небольшую тишину и задай ВОПРОС 1 (выбери слово или фразу не только из последнего урока, а распределенно из материала прошлых 2–3 занятий из [НАКОПИТЕЛЬНОГО СЛОВАРЯ] для интервального повторения) строго по методике проверки. И СРАЗУ ЗАМОЛКНИ!
+- ХОД 3 (АНАЛИЗ ОТВЕТА 1 + ВОПРОС 2): Проанализируй ответ ученика. Похвали или поправь (согласуя род с учеником). ЗАТЕМ задай ВОПРОС 2 (слово или конструкцию обязательно из [БАНКА ОШИБОК И ЗАКРЕПЛЕНИЯ] за прошлые занятия в обратном направлении проверки). И СРАЗУ ЗАМОЛКНИ!
+- ХОД 4 (АНАЛИЗ ОТВЕТА 2 + МОСТИК К ТЕМЕ УРОКА): Оцени ответ. Сделай переход к теме: напомни тему, которую намечали ранее, или обязательно спроси ученика: «Или, может быть, у тебя есть свое пожелание, какую тему разберем сегодня?». Дождись выбора темы учеником!
+3. ЗАВЕРШЕНИЕ УРОКА (ИТОГ И МОСТИК НА БУДУЩЕЕ): Наступает ТОЛЬКО при системной подсказке о финале времени (менее 2 мин). Действуй строго по шагам:
+1) Задай 2 контрольных вопроса по сегодняшнему материалу двусторонней методикой.
+2) Подведи короткий итог (что удалось освоить, а что занесем в банк повторения).
+3) Спроси пожелание ученика: «Какую тему разберем в следующий раз? Или мне подготовить план?», зафиксируй тему на будущее.
+4) Только после этого тепло, спокойно и до конца договори фразу прощания на изучаемом языке (${langAdverb}) БЕЗ внезапных обрывов!`;
+
+      let settingLanguageDirective = '';
+      if (nativeLang === 'ru') {
+        settingLanguageDirective = `\nУТОЧНЕНИЕ НАСТРОЙКИ ЯЗЫКА: В настройках выбран РУССКИЙ ЯЗЫК. Все пояснения давай строго на русском языке.`;
+      } else if (nativeLang === 'uk') {
+        settingLanguageDirective = `\nУТОЧНЕННЯ НАЛАШТУВАННЯ МОВИ: У налаштуваннях обрано УКРАЇНСЬКУ МОВУ. Усі пояснення давай строго українською мовою.`;
+      }
+
+      const additions = `
+
+${settingLanguageDirective}
+
+ОБЪЕМ УРОКА — 15 ФРАЗ (СТРОЖАЙШИЙ ЗАПРЕТ НА РАННИЙ ФИНАЛ):
+1. Пункт «3. ЗАВЕРШЕНИЕ УРОКА» наступает СТРОГО после изучения полноценного объема из 15 практических фраз и слов (3 блока по 5 фраз)!
+2. КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО говорить фразы вроде «это последнее слово», «на этом всё», «заканчиваем», пока не пройдены все 15 фраз или пока не поступит системная подсказка о финале времени!
+3. СТРОЖАЙШИЙ ЗАПРЕТ НА ПОВТОРЕНИЕ: Категорически запрещено брать слова из [НАКОПИТЕЛЬНОГО СЛОВАРЯ] или слова, которые ТОЛЬКО ЧТО проверялись на разминке текущего урока (например, если на разминке проверялось слово «суд / tribunal»), и преподавать их заново под видом новых!
+4. ПРИНЦИП УГЛУБЛЕНИЯ ТЕМЫ: Если ученик изучает профессиональную или бытовую тему, запрещено топтаться на базовых существительных первого урока. Обучай СЛЕДУЮЩИМ, более глубоким жизненным фразам и действиям (например, не просто «адвокат/суд», а «составить договор», «заседание суда перенесено на завтра», «клиент ожидает в офисе», «подать жалобу», «ознакомиться с материалами дела»).
+5. Если разобран один блок из 3-5 слов по текущей ситуации — не останавливайся! СРАЗУ плавно переходи к следующей практической ситуации или теме. Урок длится полные 15 минут!
+
+ДВУСТОРОННЯЯ МЕТОДИКА КОНТРОЛЬНЫХ ВОПРОСОВ (ПРОВЕРКА БЕЗ ПОДСКАЗОК И САМООТВЕТОВ):
+Категорически запрещено просто называть слово на иностранном языке и просить его повторить — это подсказка, а не проверка!
+Проверку всегда проводи строго в двух направлениях:
+- Направление 1 (С родного на иностранный): Задай вопрос на иностранном языке, а само слово скажи на РОДНОМ языке («Comment on dit: "счет, пожалуйста"?»), ученик должен САМ вспомнить и сказать его ${langAdverb}.
+- Направление 2 (С иностранного на родной): Назови другое слово ${langAdverb}, а ученик должен перевести его на свой родной язык («А что означает слово ...?»).
+
+СТРОЖАЙШИЙ ЗАПРЕТ НА САМООТВЕТ И ПОДСКАЗКИ:
+Задав проверочный вопрос (в Направлении 1 или 2), ты ОБЯЗАНА немедленно замолчать! Категорически запрещено в этой же реплике самой произносить ответ, перевод или озвучивать искомое слово на иностранном языке.
+Подсказать слово или разобрать правильный вариант разрешено ТОЛЬКО в следующем ходе и ТОЛЬКО в том случае, если ученик сам прямо скажет, что не помнит («не знаю», «не помню», «подскажи»).
+
+ИНТЕРВАЛЬНОЕ ПОВТОРЕНИЕ ИЗ ПРОШЛЫХ УРОКОВ:
+Слова для разминки и контрольной проверки бери распределенно: не только из предыдущего занятия, но и из материала 2–3 уроков назад и всего накопительного архива, чтобы закреплять изученное и не допускать забывания.
+
+БАЗОВЫЕ ДЕЖУРНЫЕ ФРАЗЫ БЕЗ ДУБЛЯЖА:
+Дежурные фразы общения («Привет», «Как дела?», «До скорого», «Очень хорошо») звучат ТОЛЬКО ${langAdverb} БЕЗ перевода на русский/украинский!
+
+КРЕАТИВНОСТЬ И ЗАПРЕТ НА «КОФЕЙНЫЙ КРУГ»:
+Запрещено зацикливаться на заказе кофе! Чередуй темы связными мини-курсами по несколько уроков: транспорт, покупка билетов, отель, аренда авто, врач, покупки, спорт, погода, а также системную грамматику (артикли, времена глаголов, множественное число).
+
+КАТЕГОРИЧЕСКИЙ ЗАПРЕТ НА ОЗВУЧИВАНИЕ РЕМАРОК И МЕТА-СЛОВ:
+Категорически запрещено произносить вслух слова «пауза», «одна-две секунды», «секунд», «тишина», «повтор», «перевод», знаки препинания, кавычки или цитировать служебные инструкции! Если требуется выдержать паузу — просто физически молчи. Твоя речь — это исключительно живые слова диалога.`;
+
+      return originalPrompt + additions;
     }
 
-    // --- НОВАЯ СТАБИЛЬНАЯ АРХИТЕКТУРА WEBSOCKET И AUDIO ---
-    let socket = null, audioContext = null, mediaStream = null, audioWorkletNode = null;
+    // --- Звуковой тракт и сокет ---
+    let socket = null;
+    let audioContext = null;
+    let mediaStream = null;
+    let sourceNode = null;
+    let biquadFilter = null;
+    let dummyGain = null;
+    let audioWorkletNode = null;
     let playbackContext = null;
     let scheduledPlayTime = 0;
+    let wakeLock = null;
     
     let isSessionActive = false;
     let isSetupComplete = false; 
     let isBotSpeaking = false;
+    let isServerTurnActive = false;
     let isExtractingMemory = false;
+    let isWaitingForResponse = false;
+    let memorySavedSuccessfully = false;
+    let isTimeWarningPending = false;
+    let isTimeWarningSent = false;
+
+    let botSpeechDrainTimeout = null;
+    let watchdogTimer = null;
+    let stopSessionTimeoutId = null;
+    let lessonTimerInterval = null;
+    let lessonSecondsRemaining = 15 * 60;
     let activeAudioSources = [];
+    let isHeadsetConnected = false;
 
     const workletCode = `
       class PCMProcessor extends AudioWorkletProcessor {
+        constructor() {
+          super();
+          this.targetSampleRate = 16000;
+          this.bufferSize = 1024;
+          this.pcmBuffer = new Int16Array(this.bufferSize);
+          this.bufferIndex = 0;
+          this.phase = 0;
+        }
         process(inputs, outputs, parameters) {
           const input = inputs[0];
           if (input && input.length > 0) {
             const channelData = input[0];
-            const pcm16 = new Int16Array(channelData.length);
+            const sampleRateRatio = sampleRate / this.targetSampleRate;
+            
             let sum = 0;
-            for (let i = 0; i < channelData.length; i++) {
-              let s = Math.max(-1, Math.min(1, channelData[i]));
-              pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-              sum += channelData[i] * channelData[i];
+            while (this.phase < channelData.length) {
+              const idx = Math.floor(this.phase);
+              const s = Math.max(-1, Math.min(1, channelData[idx]));
+              sum += s * s;
+              this.pcmBuffer[this.bufferIndex++] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+              
+              if (this.bufferIndex >= this.bufferSize) {
+                const rms = Math.sqrt(sum / this.bufferSize);
+                const bufferToSend = this.pcmBuffer.slice(0, this.bufferSize).buffer;
+                this.port.postMessage({ pcm: bufferToSend, rms: rms }, [bufferToSend]);
+                this.bufferIndex = 0;
+                sum = 0;
+              }
+              this.phase += sampleRateRatio;
             }
-            let rms = Math.sqrt(sum / channelData.length);
-            this.port.postMessage({ pcm: pcm16.buffer, rms: rms }, [pcm16.buffer]);
+            this.phase -= channelData.length;
           }
           return true;
         }
@@ -218,54 +698,180 @@
       registerProcessor('pcm-processor', PCMProcessor);
     `;
 
-    async function initMicrophone() {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-      mediaStream = await navigator.mediaDevices.getUserMedia({ 
-          audio: { channelCount: 1, sampleRate: 16000, echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
-      });
-      
-      const blob = new Blob([workletCode], { type: 'application/javascript' });
-      const workletUrl = URL.createObjectURL(blob);
-      await audioContext.audioWorklet.addModule(workletUrl);
-      
-      const source = audioContext.createMediaStreamSource(mediaStream);
-      audioWorkletNode = new AudioWorkletNode(audioContext, 'pcm-processor');
-      
-      audioWorkletNode.port.onmessage = (event) => {
-        if (!isSessionActive || !isSetupComplete || !socket || socket.readyState !== WebSocket.OPEN) return;
-        
-        const rms = event.data.rms;
-        if (!isBotSpeaking) {
-          if (rms > 0.015) { 
-            orb.style.transform = `scale(${1 + (rms * 2)})`; 
-            orb.style.boxShadow = `0 0 50px rgba(56, 189, 248, 0.8)`; 
-          } else { 
-            orb.style.transform = "scale(1)"; 
-            orb.style.boxShadow = `0 0 30px rgba(56, 189, 248, 0.4)`; 
-          }
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
         }
-
-        const bytes = new Uint8Array(event.data.pcm);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        
-        if (!isExtractingMemory) {
-            socket.send(JSON.stringify({ realtimeInput: { mediaChunks: [{ mimeType: "audio/pcm;rate=16000", data: window.btoa(binary) }] } }));
-        }
-      };
-      
-      source.connect(audioWorkletNode);
+      } catch (err) {}
     }
 
-    btnAction.onclick = () => { isSessionActive ? stopSession() : startSession(); };
+    function releaseWakeLock() {
+      if (wakeLock) {
+        try { wakeLock.release(); } catch(e) {}
+        wakeLock = null;
+      }
+    }
+
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible' && isSessionActive) {
+        await requestWakeLock();
+        if (playbackContext && playbackContext.state === 'suspended') {
+          try { await playbackContext.resume(); } catch(e) {}
+        }
+        if (audioContext && audioContext.state === 'suspended') {
+          try { await audioContext.resume(); } catch(e) {}
+        }
+      }
+    });
+
+    async function checkAudioOutputs() {
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        isHeadsetConnected = devices.some(d => {
+          const lbl = (d.label || '').toLowerCase();
+          return lbl.includes('head') || lbl.includes('airpods') || lbl.includes('bluetooth') || lbl.includes('buds') || lbl.includes('ear');
+        });
+      } catch(e) {}
+    }
+
+    if (navigator.mediaDevices) {
+      navigator.mediaDevices.ondevicechange = checkAudioOutputs;
+    }
+
+    async function initMicrophone() {
+      if (!audioContext || audioContext.state === 'closed') {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+
+      mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
+      });
+      
+      await checkAudioOutputs();
+
+      if (!audioWorkletNode) {
+        const blob = new Blob([workletCode], { type: 'application/javascript' });
+        const workletUrl = URL.createObjectURL(blob);
+        await audioContext.audioWorklet.addModule(workletUrl);
+        audioWorkletNode = new AudioWorkletNode(audioContext, 'pcm-processor');
+        
+        dummyGain = audioContext.createGain();
+        dummyGain.gain.value = 0;
+        audioWorkletNode.connect(dummyGain);
+        dummyGain.connect(audioContext.destination);
+
+        audioWorkletNode.port.onmessage = (event) => {
+          if (!isSessionActive || !isSetupComplete || !socket || socket.readyState !== WebSocket.OPEN) return;
+          
+          const rms = event.data.rms;
+          
+          if (!isBotSpeaking && !isWaitingForResponse) {
+            if (rms > 0.015) { 
+              avatarHalo.style.transform = `scale(${1 + Math.min(rms * 3, 0.45)})`; 
+              avatarHalo.style.opacity = '1'; 
+            } else { 
+              avatarHalo.style.transform = "scale(1)"; 
+              avatarHalo.style.opacity = '0.3'; 
+            }
+          }
+
+          let allowTransmission = true;
+          const currentMode = (audioMode === 'auto') ? (isHeadsetConnected ? 'full' : 'half') : audioMode;
+
+          if (currentMode === 'half') {
+            if (isBotSpeaking || isWaitingForResponse || isExtractingMemory) {
+              allowTransmission = false;
+            }
+          } else {
+            if (isExtractingMemory) allowTransmission = false;
+          }
+
+          if (allowTransmission) {
+            const bytes = new Uint8Array(event.data.pcm);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+              binary += String.fromCharCode(bytes[i]);
+            }
+            socket.send(JSON.stringify({ 
+              realtimeInput: { 
+                mediaChunks: [{ mimeType: "audio/pcm;rate=16000", data: window.btoa(binary) }] 
+              } 
+            }));
+          }
+        };
+      }
+      
+      if (sourceNode) {
+        try { sourceNode.disconnect(); } catch(e) {}
+      }
+      if (biquadFilter) {
+        try { biquadFilter.disconnect(); } catch(e) {}
+      }
+
+      sourceNode = audioContext.createMediaStreamSource(mediaStream);
+      biquadFilter = audioContext.createBiquadFilter();
+      biquadFilter.type = "lowpass";
+      biquadFilter.frequency.value = 7500;
+      biquadFilter.Q.value = 0.707;
+
+      sourceNode.connect(biquadFilter);
+      biquadFilter.connect(audioWorkletNode);
+    }
+
+    btnAction.onclick = () => { isSessionActive ? stopSession(true) : startSession(); };
 
     btnEndTurn.onclick = () => {
       if (socket && socket.readyState === WebSocket.OPEN && isSetupComplete && !isExtractingMemory) {
-        socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "[Ученик закончил говорить. Жду твой ответ.]" }] }], turnComplete: true } }));
+        isWaitingForResponse = true;
         stopBotSpeech(); 
-        statusText.innerText = "Анализ ответа...";
+        statusText.innerText = "Репетитор слушает и думает...";
+
+        const minutesLeft = Math.ceil(lessonSecondsRemaining / 60);
+        let genderHint = '';
+        if (studentGender === 'female') {
+          genderHint = nativeLang === 'uk' ? 'Звертайся у ЖІНОЧОМУ роді.' : 'Обращайся в ЖЕНСКОМ роде.';
+        } else if (studentGender === 'male') {
+          genderHint = nativeLang === 'uk' ? 'Звертайся у ЧОЛОВІЧОМУ роді.' : 'Обращайся в МУЖСКОМ роде.';
+        } else {
+          genderHint = nativeLang === 'uk' ? 'Узгоджуй форми роду відповідно до статі учня з пам’яті/імені.' : 'Согласуй формы рода соответственно полу ученика из памяти/имени.';
+        }
+
+        let promptText = nativeLang === 'uk' 
+          ? `[СИСТЕМНО: Залишилося ще ${minutesLeft} хв. Урок триває. УВАГА: Оціни та проаналізуй мою репліку! ${genderHint} Якщо виправляєш помилку: після відпрацювання слова ОБОВ'ЯЗКОВО попроси повторити ВСЮ фразу цілком! Якщо нова фраза — строго за правилом: 1) Зміст рідною мовою, 2) ДВІЧІ повільно іноземною мовою з тишею між ними, 3) Команда «Повтори» і мовчання! НЕ вимовляй слово «пауза»! ПРИ ПЕРЕВІРЦІ ЗНАНЬ: НЕ підказуй і НЕ кажи відповідь сама, доки я не скажу, що не пам'ятаю!]`
+          : `[СИСТЕМНО: Осталось еще ${minutesLeft} мин. Урок идет. ВНИМАНИЕ: Оцени и проанализируй мою реплику! ${genderHint} Если исправляешь ошибку: после отработки слова ОБЯЗАТЕЛЬНО попроси повторить ВСЮ фразу целиком! Если новая фраза — строго по правилу: 1) Смысл на родном языке, 2) ДВАЖДЫ медленно на изучаемом языке с тишиной между ними, 3) Команда «Повтори» и молчание! НЕ произноси слово «пауза»! ПРИ ПРОВЕРКЕ ЗНАНИЙ: НЕ подсказывай и НЕ говори ответ сама, пока я не скажу, что не помню!]`;
+          
+        if (isTimeWarningPending && !isTimeWarningSent) {
+          promptText += nativeLang === 'uk'
+            ? " [СИСТЕМНА ПІДКАЗКА: ЧАС УРОКУ ДОБІГАЄ КІНЦЯ (менше 2 хв). Проведи фінальну двосторонню перевірку 2 слів, підведи підсумки, узгодь тему на наступний урок і тепло попрощайся без обривів!]"
+            : " [СИСТЕМНАЯ ПОДСКАЗКА: ВРЕМЯ УРОКА ВЫХОДИТ (меньше 2 мин). Проведи финальную двустороннюю проверку 2 слов, подведи итоги, согласуй тему на следующий урок и тепло попрощайся без обрывов!]";
+          isTimeWarningSent = true;
+          isTimeWarningPending = false;
+        }
+
+        socket.send(JSON.stringify({ 
+          clientContent: { turns: [{ role: "user", parts: [{ text: promptText }] }], turnComplete: true } 
+        }));
+
+        clearTimeout(watchdogTimer);
+        watchdogTimer = setTimeout(() => {
+          if (isWaitingForResponse) {
+            isWaitingForResponse = false;
+            statusText.innerText = "Слушаю вас...";
+          }
+        }, 4500);
+      }
+    };
+
+    btnInterrupt.onclick = () => {
+      if (isBotSpeaking) {
+        stopBotSpeech();
+        isWaitingForResponse = false;
+        statusText.innerText = "Слушаю вас...";
       }
     };
 
@@ -273,29 +879,138 @@
       activeAudioSources.forEach(source => { try { source.stop(); } catch(e) {} });
       activeAudioSources = []; 
       isBotSpeaking = false; 
+      isServerTurnActive = false;
       scheduledPlayTime = 0; 
-      orb.className = "orb"; 
-      orb.style.transform = "scale(1)";
+      avatarCard.classList.remove('speaking');
+      btnInterrupt.style.display = "none";
+      if (botSpeechDrainTimeout) clearTimeout(botSpeechDrainTimeout);
+    }
+
+    function sendAutomaticTimeWarning() {
+      if (!socket || socket.readyState !== WebSocket.OPEN || !isSessionActive || isExtractingMemory || isTimeWarningSent) return;
+      isTimeWarningSent = true;
+      isTimeWarningPending = false;
+      const promptText = (nativeLang === 'uk')
+        ? "[СИСТЕМНА ПІДКАЗКА: ЧАС УРОКУ ДОБІГАЄ КІНЦЯ (менше 2 хв). Проведи фінальну двосторонню перевірку 2 слів, підведи підсумки, узгодь тему на наступний урок і тепло попрощайся без обривів!]"
+        : "[СИСТЕМНАЯ ПОДСКАЗКА: ВРЕМЯ УРОКА ВЫХОДИТ (меньше 2 мин). Проведи финальную двустороннюю проверку 2 слов, подведи итоги, согласуй тему на следующий урок и тепло попрощайся без обрывов!]";
+      socket.send(JSON.stringify({
+        clientContent: { turns: [{ role: "user", parts: [{ text: promptText }] }], turnComplete: true }
+      }));
+    }
+
+    function checkBotSpeakingEnded() {
+      if (isServerTurnActive) return; 
+      if (activeAudioSources.length === 0 && (!playbackContext || playbackContext.currentTime >= scheduledPlayTime)) {
+        if (botSpeechDrainTimeout) clearTimeout(botSpeechDrainTimeout);
+        botSpeechDrainTimeout = setTimeout(() => {
+          if (isServerTurnActive || activeAudioSources.length > 0) return;
+          if (playbackContext && playbackContext.currentTime < scheduledPlayTime) return;
+          if (isSessionActive) {
+            isBotSpeaking = false;
+            avatarCard.classList.remove('speaking');
+            btnInterrupt.style.display = "none";
+            if (!isWaitingForResponse && !isExtractingMemory) {
+              statusText.innerText = "Ваша очередь говорить...";
+            }
+            if (isTimeWarningPending && !isTimeWarningSent) {
+              sendAutomaticTimeWarning();
+            }
+          }
+        }, 200);
+      }
+    }
+
+    function startLessonTimer() {
+      lessonSecondsRemaining = 15 * 60;
+      isTimeWarningPending = false;
+      isTimeWarningSent = false;
+      timerBadge.style.display = "block";
+      progressPill.style.display = "inline-block";
+      timerBadge.classList.remove('timer-warning');
+      updateTimerBadge();
+
+      clearInterval(lessonTimerInterval);
+      lessonTimerInterval = setInterval(() => {
+        lessonSecondsRemaining--;
+        updateTimerBadge();
+
+        if (lessonSecondsRemaining > 10 * 60) {
+          progressPill.innerText = "Блок 1 • Разминка и фразы 1–5";
+        } else if (lessonSecondsRemaining > 5 * 60) {
+          progressPill.innerText = "Блок 2 • Практика и фразы 6–10";
+        } else {
+          progressPill.innerText = "Блок 3 • Закрепление и фразы 11–15";
+        }
+
+        if (lessonSecondsRemaining === 120) {
+          timerBadge.classList.add('timer-warning');
+          isTimeWarningPending = true;
+          if (!isBotSpeaking && !isWaitingForResponse) {
+            sendAutomaticTimeWarning();
+          }
+        }
+
+        if (lessonSecondsRemaining <= 0) {
+          clearInterval(lessonTimerInterval);
+          statusText.innerText = "Время урока истекло. Завершение...";
+          stopSession(false);
+        }
+      }, 1000);
+    }
+
+    function stopLessonTimer() {
+      clearInterval(lessonTimerInterval);
+      timerBadge.style.display = "none";
+      progressPill.style.display = "none";
+      isTimeWarningPending = false;
+    }
+
+    function updateTimerBadge() {
+      const m = Math.floor(lessonSecondsRemaining / 60);
+      const s = lessonSecondsRemaining % 60;
+      timerBadge.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
     async function startSession() {
-      if (!apiKey) { modalSettings.style.display = 'flex'; return; }
-      
+      apiKey = getStoredApiKey();
+      if (!apiKey) { 
+        modalSettings.style.display = 'flex'; 
+        return; 
+      }
+
       btnAction.disabled = true; 
+      statusText.innerText = "Инициализация звука...";
+
+      try {
+        if (!playbackContext) playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        if (playbackContext.state === 'suspended') await playbackContext.resume();
+
+        if (!mediaStream) await initMicrophone();
+        if (audioContext && audioContext.state === 'suspended') await audioContext.resume();
+      } catch (err) {
+        console.error("Audio initialization error:", err);
+        btnAction.disabled = false;
+        btnAction.innerText = "Начать урок";
+        btnAction.className = "btn-main btn-start";
+        statusText.innerText = "Ошибка доступа к микрофону.";
+        alert("Не удалось активировать микрофон. Разрешите доступ в настройках браузера.");
+        return;
+      }
+
       isSessionActive = true;
       isSetupComplete = false;
       isExtractingMemory = false;
+      isWaitingForResponse = false;
+      memorySavedSuccessfully = false;
+      isTimeWarningSent = false;
       stopBotSpeech();
 
-      if (!playbackContext) playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-      if (playbackContext.state === 'suspended') playbackContext.resume();
-      
-      if (!mediaStream) await initMicrophone();
+      await requestWakeLock();
       connectWebSocket();
     }
 
     function connectWebSocket() {
-      statusText.innerText = "Подключение...";
+      statusText.innerText = "Соединение с сервером...";
       socket = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${apiKey}`);
       
       socket.onopen = () => {
@@ -307,7 +1022,20 @@
               speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: teacherGender === 'male' ? "Puck" : "Aoede" } } } 
             },
             systemInstruction: { parts: [{ text: getSystemInstruction() }] },
-            tools: [{ functionDeclarations: [{ name: "saveStudentProfile", description: "Сохранить профиль ученика и его прогресс в память устройства.", parameters: { type: "OBJECT", properties: { global_memory: { type: "STRING", description: "Факты об ученике (имя, семья, профессия, хобби, город и т.д.). Обязательно сохрани старые факты и добавь новые." }, lang_memory: { type: "STRING", description: "Прогресс по языку: разобранные темы, ошибки, новые слова." } }, required: ["global_memory", "lang_memory"] } }] }]
+            tools: [{ 
+              functionDeclarations: [{ 
+                name: "saveStudentProfile", 
+                description: "Сохранить профиль ученика в постоянную память. ВНИМАНИЕ: Вызывать ТОЛЬКО по системной команде завершения урока в самом конце! Во время урока вызов СТРОГО ЗАПРЕЩЕН.", 
+                parameters: { 
+                  type: "OBJECT", 
+                  properties: { 
+                    global_memory: { type: "STRING", description: "Накопительный профиль: Имя, Пол (грамматический род), профессия, семья, питомец, город, хобби, привычки." }, 
+                    lang_memory: { type: "STRING", description: "Накопительный архив языка: [ЖУРНАЛ УРОКОВ], [НАКОПИТЕЛЬНЫЙ СЛОВАРЬ], [БАНК ОШИБОК И ЗАКРЕПЛЕНИЯ], [ПЛАН НА СЛЕДУЮЩИЙ УРОК]." } 
+                  }, 
+                  required: ["global_memory", "lang_memory"] 
+                } 
+              }] 
+            }]
           }
         };
         socket.send(JSON.stringify(setupMessage));
@@ -323,41 +1051,92 @@
            btnAction.className = "btn-main btn-stop";
            btnEndTurn.style.display = "block"; 
            statusText.innerText = "Слушаю вас...";
+           startLessonTimer();
 
            let helloWord = targetLanguage === 'french' ? 'Bonjour' : (targetLanguage === 'english' ? 'Hello' : '¡Hola');
-           const startPrompt = (hasCompletedFirstLesson || globalMemory) ? `${helloWord} ! Я готов, давай продолжим урок.` : `${helloWord} ! Я готов к первому уроку.`;
+           const hasCurrentLangMemory = langMemory && langMemory.trim() !== '' && langMemory !== 'Чистый лист.' && langMemory !== 'Чистий аркуш.' && langMemory !== 'Чистый лист (урок 1).';
+
+           let startPrompt = '';
+           if (nativeLang === 'ru') {
+             startPrompt = !hasCurrentLangMemory 
+               ? `${helloWord}! [ИНСТРУКЦИЯ К УРОКУ 1: Поздоровайся на изучаемом языке. Спроси на изучаемом языке имя ученика и спроси, изучал(а) ли он(а) этот язык раньше. СРАЗУ ЗАМОЛКНИ, жди ответа!]`
+               : `${helloWord}! [ИНСТРУКЦИЯ К ХОДУ 1: Радостно поздоровайся по имени. Задай ТОЛЬКО ОДИН вопрос о делах или настроении на изучаемом языке БЕЗ перевода. КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО в этой реплике проверять слова или объявлять темы! Задай вопрос о делах и СРАЗУ ЗАМОЛКНИ, жди ответа ученика!]`;
+           } else if (nativeLang === 'uk') {
+             startPrompt = !hasCurrentLangMemory 
+               ? `${helloWord}! [ІНСТРУКЦІЯ ДО УРОКУ 1: Привітайся мовою вивчення. Запитай мовою вивчення ім'я учня і поцікався, чи вивчав(ла) він/вона цю мову раніше. ВІДРАЗУ ЗАМОВКНИ, чекай відповіді!]`
+               : `${helloWord}! [ІНСТРУКЦІЯ ДО ХОДУ 1: Привітайся на ім'я. Задай ЛИШЕ ОДНЕ питання про справи або настрій мовою вивчення БЕЗ перекладу. КАТЕГОРИЧНО ЗАБОРОНЕНО у цій репліці перевіряти слова або оголошувати теми! Задай питання про справи і ВІДРАЗУ ЗАМОВКНИ, чекай відповіді учня!]`;
+           } else {
+             startPrompt = !hasCurrentLangMemory
+               ? `${helloWord}! [ИНСТРУКЦИЯ К УРОКУ 1: Поздоровайся на изучаемом языке. Спроси на изучаемом языке имя ученика и поинтересуйся, изучал(а) ли он(а) этот язык раньше. Определи родной язык ученика (русский или украинский) по первому ответу. СРАЗУ ЗАМОЛКНИ, жди ответа!]`
+               : `${helloWord}! [ИНСТРУКЦИЯ К ХОДУ 1: Радостно поздоровайся по имени. Задай ТОЛЬКО ОДИН вопрос о делах или настроении на изучаемом языке БЕЗ перевода. КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО в этой реплике проверять слова или объявлять темы! Задай вопрос о делах и СРАЗУ ЗАМОЛКНИ, жди ответа!]`;
+           }
            
            socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: startPrompt }] }], turnComplete: true } }));
            return;
         }
 
-        const functionCalls = responseData.toolCall?.functionCalls || (responseData.serverContent?.modelTurn?.parts ? responseData.serverContent.modelTurn.parts.filter(p => p.functionCall).map(p => p.functionCall) : null);
+        const functionCalls = responseData.toolCall?.functionCalls || 
+          (responseData.serverContent?.modelTurn?.parts ? responseData.serverContent.modelTurn.parts.filter(p => p.functionCall).map(p => p.functionCall) : null);
+        
         if (functionCalls && functionCalls.length > 0) {
           functionCalls.forEach(call => {
             if (call.name === "saveStudentProfile" && call.args) {
-              if (call.args.global_memory) { globalMemory = call.args.global_memory; localStorage.setItem('global_memory', globalMemory); }
-              if (call.args.lang_memory) { langMemory = call.args.lang_memory; localStorage.setItem(`memory_${targetLanguage}`, langMemory); }
+              if (call.args.global_memory) { 
+                globalMemory = call.args.global_memory; 
+                localStorage.setItem('global_memory', globalMemory); 
+              }
+              if (call.args.lang_memory) { 
+                langMemory = call.args.lang_memory; 
+                localStorage.setItem(`memory_${targetLanguage}`, langMemory); 
+              }
+              memorySavedSuccessfully = true;
+
+              if (socket && socket.readyState === WebSocket.OPEN && call.id) {
+                socket.send(JSON.stringify({
+                  toolResponse: {
+                    functionResponses: [{
+                      response: { output: { status: "success" } },
+                      id: call.id
+                    }]
+                  }
+                }));
+              }
             }
           });
-          if (isExtractingMemory) { finalizeStop(); return; }
+
+          if (isExtractingMemory && memorySavedSuccessfully) {
+            clearTimeout(stopSessionTimeoutId);
+            setTimeout(() => finalizeStop("Урок и прогресс сохранены."), 300);
+            return;
+          }
         }
 
         if (isExtractingMemory && responseData.serverContent?.turnComplete) {
-          finalizeStop(); return; 
+          if (memorySavedSuccessfully) {
+            clearTimeout(stopSessionTimeoutId);
+            setTimeout(() => finalizeStop("Урок и прогресс сохранены."), 300);
+            return;
+          }
         }
 
         if (responseData.serverContent?.interrupted) {
+          clearTimeout(watchdogTimer);
           stopBotSpeech();
+          isWaitingForResponse = false;
           statusText.innerText = "Слушаю вас...";
         }
 
         if (responseData.serverContent?.modelTurn) {
+          clearTimeout(watchdogTimer);
+          isWaitingForResponse = false;
+          isServerTurnActive = true;
           for (const part of responseData.serverContent.modelTurn.parts) {
             if (part.inlineData?.mimeType.startsWith("audio/pcm")) {
               playPcmChunk(part.inlineData.data); 
               if (!isBotSpeaking) {
                  isBotSpeaking = true; 
-                 orb.className = "orb speaking"; 
+                 avatarCard.classList.add('speaking');
+                 btnInterrupt.style.display = "block";
                  statusText.innerText = "Репетитор говорит...";
               }
             }
@@ -365,55 +1144,157 @@
         }
         
         if (responseData.serverContent?.turnComplete) { 
-          isBotSpeaking = false; 
-          orb.className = "orb"; 
-          statusText.innerText = "Ваша очередь говорить..."; 
+          clearTimeout(watchdogTimer);
+          isServerTurnActive = false;
+          checkBotSpeakingEnded();
         }
       };
 
-      socket.onerror = () => { if (isSessionActive) finalizeStop(); };
-      socket.onclose = () => { if (isSessionActive) finalizeStop(); };
+      socket.onerror = (e) => { 
+        console.warn("WebSocket error:", e);
+        if (isSessionActive) {
+          finalizeStop("Ошибка соединения с сервером.");
+        }
+      };
+      
+      socket.onclose = (e) => { 
+        console.warn("WebSocket close code:", e.code, e.reason);
+        if (isSessionActive) {
+          const msg = lessonSecondsRemaining <= 10 ? "Урок и прогресс сохранены." : "Связь с сервером завершена. Данные сохранены.";
+          finalizeStop(msg);
+        }
+      };
     }
 
-    function stopSession() {
+    // Мягкое завершение с гарантированным ожиданием конца реплики прощания (до 10 секунд)
+    function stopSession(forceImmediate = false) {
       if (!isSessionActive) return;
       isExtractingMemory = true;
-      stopBotSpeech(); 
+      stopLessonTimer();
       btnAction.disabled = true; 
       btnEndTurn.style.display = "none";
-      statusText.innerText = "Сохранение прогресса...";
+      btnInterrupt.style.display = "none";
 
-      if (socket && socket.readyState === WebSocket.OPEN && isSetupComplete) {
-        const memoryPrompt = `[СИСТЕМНАЯ КОМАНДА: Урок завершен. Немедленно вызови функцию saveStudentProfile, чтобы сохранить в постоянную память профиль ученика и прогресс.
-СТАРАЯ БАЗА: ${globalMemory || 'пусто'}
-СТАРЫЙ ПРОГРЕСС: ${langMemory || 'пусто'}
-Объедини старые факты с новыми и вызови saveStudentProfile. Голосом ничего не произноси!]`;
-        socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: memoryPrompt }] }], turnComplete: true } }));
-        setTimeout(() => finalizeStop(), 8000); 
+      const proceedToSave = () => {
+        statusText.innerText = "Сохранение прогресса...";
+        if (socket && socket.readyState === WebSocket.OPEN && isSetupComplete) {
+          const langDirective = nativeLang === 'ru' ? 'Записи сделай на РУССКОМ языке.' : (nativeLang === 'uk' ? 'Записи зроби УКРАЇНСЬКОЮ мовою.' : '');
+          const memoryPrompt = `[СИСТЕМНАЯ ДИРЕКТИВА: Урок завершен. Немедленно вызови функцию saveStudentProfile.
+ВНИМАНИЕ: Твоя память — это ДВА НАКОПИТЕЛЬНЫХ АРХИВА (CUMULATIVE). КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО СТИРАТЬ или сокращать ранее сохраненные данные!
+ОБЯЗАТЕЛЬНО ОБЪЕДИНИ старые данные с новыми:
+
+1. global_memory (БАЗА ЖИЗНИ И ПРОФИЛЬ):
+- Имя и установленный Пол ученика (грамматический род: мужской или женский).
+- Все известные факты: профессия, семья, питомец, город, хобби, привычки.
+- Если на сегодняшнем уроке стали известны НОВЫЕ факты — бережно добавь их, сохранив ВСЕ старые факты!
+
+2. lang_memory (НАКОПИТЕЛЬНЫЙ АРХИВ ЯЗЫКА):
+- [ЖУРНАЛ УРОКОВ]: список всех тем всех прошедших уроков (добавь сегодняшний урок с темой).
+- [НАКОПИТЕЛЬНЫЙ СЛОВАРЬ]: полный список всех слов за все уроки (добавь сегодняшние новые слова).
+- [БАНК ОШИБОК И ЗАКРЕПЛЕНИЯ]: слова/фразы/звуки, в которых ученик ошибся + неисправленные старые ошибки.
+- [СОГЛАСОВАННАЯ ТЕМА СЛЕДУЮЩЕГО УРОКА]: тема, которую договорились разобрать в следующий раз.
+
+${langDirective}
+СТАРАЯ БАЗА О ЖИЗНИ: ${globalMemory || 'пусто'}
+СТАРАЯ НАКОПИТЕЛЬНАЯ ПАМЯТЬ ЯЗЫКА: ${langMemory || 'пусто'}
+Вызови saveStudentProfile с полными объединенными данными. Голосом ничего не говори!]`;
+          
+          socket.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: memoryPrompt }] }], turnComplete: true } }));
+          
+          clearTimeout(stopSessionTimeoutId);
+          stopSessionTimeoutId = setTimeout(() => {
+            const finalMsg = memorySavedSuccessfully ? "Урок и прогресс сохранены." : "Урок завершен. Прогресс сохранен.";
+            finalizeStop(finalMsg);
+          }, 7500);
+        } else {
+          finalizeStop("Урок завершен.");
+        }
+      };
+
+      const isAudioStillPlaying = activeAudioSources.length > 0 || isBotSpeaking || (playbackContext && scheduledPlayTime > playbackContext.currentTime);
+
+      if (!forceImmediate && isAudioStillPlaying) {
+        statusText.innerText = "Репетитор договаривает...";
+        const waitAudio = setInterval(() => {
+          const isCompletelyFinished = activeAudioSources.length === 0 && !isBotSpeaking && (!playbackContext || playbackContext.currentTime >= scheduledPlayTime);
+          if (isCompletelyFinished) {
+            clearInterval(waitAudio);
+            proceedToSave();
+          }
+        }, 150);
+        setTimeout(() => {
+          clearInterval(waitAudio);
+          proceedToSave();
+        }, 10000);
       } else {
-        finalizeStop();
+        stopBotSpeech();
+        proceedToSave();
       }
     }
 
-    function finalizeStop() {
-      stopBotSpeech();
-      isSessionActive = false;
-      isSetupComplete = false;
-      isExtractingMemory = false;
+    function finalizeStop(finalMessage = "Урок и прогресс сохранены.") {
+      clearTimeout(stopSessionTimeoutId);
+      stopSessionTimeoutId = null;
+      stopLessonTimer();
+      releaseWakeLock();
 
-      btnAction.disabled = false; 
-      btnAction.innerText = "Начать урок"; 
-      btnAction.className = "btn-main btn-start";
-      btnEndTurn.style.display = "none"; 
-      statusText.innerText = "Урок и прогресс сохранены.";
-      
-      if (socket && socket.readyState === WebSocket.OPEN) {
+      const completeCleanup = () => {
+        stopBotSpeech();
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(track => track.stop());
+          mediaStream = null;
+        }
+        if (sourceNode) {
+          try { sourceNode.disconnect(); } catch(e) {}
+          sourceNode = null;
+        }
+        if (biquadFilter) {
+          try { biquadFilter.disconnect(); } catch(e) {}
+          biquadFilter = null;
+        }
+        if (audioContext && audioContext.state === 'running') {
+          try { audioContext.suspend(); } catch(e) {}
+        }
+        if (playbackContext && playbackContext.state === 'running') {
+          try { playbackContext.suspend(); } catch(e) {}
+        }
+
+        isSessionActive = false;
+        isSetupComplete = false;
+        isExtractingMemory = false;
+        isWaitingForResponse = false;
+
+        btnAction.disabled = false; 
+        btnAction.innerText = "Начать урок"; 
+        btnAction.className = "btn-main btn-start";
+        btnEndTurn.style.display = "none"; 
+        btnInterrupt.style.display = "none";
+        statusText.innerText = finalMessage;
+        
+        if (socket && socket.readyState === WebSocket.OPEN) {
           socket.onclose = null; 
           socket.close();
+        }
+        updateUI();
+      };
+
+      const isAudioPending = activeAudioSources.length > 0 || (playbackContext && scheduledPlayTime > playbackContext.currentTime);
+      if (isAudioPending) {
+        statusText.innerText = "Завершение реплики...";
+        const drainCheckInterval = setInterval(() => {
+          const isDone = activeAudioSources.length === 0 && (!playbackContext || playbackContext.currentTime >= scheduledPlayTime);
+          if (isDone) {
+            clearInterval(drainCheckInterval);
+            completeCleanup();
+          }
+        }, 150);
+        setTimeout(() => {
+          clearInterval(drainCheckInterval);
+          completeCleanup();
+        }, 10000);
+      } else {
+        completeCleanup();
       }
-      
-      localStorage.setItem(`learned_${targetLanguage}`, 'true'); 
-      updateUI();
     }
 
     function playPcmChunk(base64Audio) {
@@ -423,9 +1304,10 @@
       const bytes = new Uint8Array(raw.length);
       for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
       
-      const int16Array = new Int16Array(bytes.buffer); 
-      const float32Array = new Float32Array(int16Array.length);
-      for (let i = 0; i < int16Array.length; i++) float32Array[i] = int16Array[i] / 32768;
+      const sampleCount = Math.floor(raw.length / 2);
+      const int16Array = new Int16Array(bytes.buffer, 0, sampleCount); 
+      const float32Array = new Float32Array(sampleCount);
+      for (let i = 0; i < sampleCount; i++) float32Array[i] = int16Array[i] / 32768;
       
       const audioBuffer = playbackContext.createBuffer(1, float32Array.length, 24000); 
       audioBuffer.getChannelData(0).set(float32Array);
@@ -436,7 +1318,7 @@
       
       const currentTime = playbackContext.currentTime;
       if (scheduledPlayTime < currentTime) {
-          scheduledPlayTime = currentTime + 0.03; 
+        scheduledPlayTime = currentTime + 0.12; 
       }
       
       source.start(scheduledPlayTime); 
@@ -445,6 +1327,7 @@
       activeAudioSources.push(source); 
       source.onended = () => { 
         activeAudioSources = activeAudioSources.filter(s => s !== source); 
+        checkBotSpeakingEnded();
       };
     }
   </script>
